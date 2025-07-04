@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import { FaGoogle, FaChalkboardTeacher } from "react-icons/fa";
 import { PiGraduationCapFill } from "react-icons/pi";
+import { Link } from "react-router-dom";
 
 // Vector illustrations (would be separate SVG files in reality)
 const EvaluationIllustration = () => (
@@ -119,9 +120,11 @@ const HomePage = () => {
               <FiMoon className="text-xl" />
             )}
           </button>
-          <button className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-md">
-            Sign In
-          </button>
+          <Link to="/signin">
+            <button className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-md">
+              Sign In
+            </button>
+          </Link>
         </div>
       </nav>
 
@@ -146,16 +149,20 @@ const HomePage = () => {
               meaningful feedback efficiently.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mb-16">
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl hover:shadow-lg transition-all shadow-md hover:shadow-indigo-500/30 flex items-center gap-2"
-              >
-                Get Started <FiArrowRight />
-              </motion.button>
-              <button className="px-8 py-3.5 flex items-center justify-center gap-2 bg-white text-gray-800 rounded-xl hover:bg-gray-50 transition border border-gray-200 shadow-sm">
-                <FaGoogle className="text-blue-500" /> Sign in with Google
-              </button>
+              <Link to="/signup">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl hover:shadow-lg transition-all shadow-md hover:shadow-indigo-500/30 flex items-center gap-2"
+                >
+                  Get Started <FiArrowRight />
+                </motion.button>
+              </Link>
+              <Link to="/signin">
+                <button className="px-8 py-3.5 flex items-center justify-center gap-2 bg-white text-gray-800 rounded-xl hover:bg-gray-50 transition border border-gray-200 shadow-sm">
+                  <FaGoogle className="text-blue-500" /> Sign in with Google
+                </button>
+              </Link>
             </div>
 
             <div className="flex items-center gap-4">
