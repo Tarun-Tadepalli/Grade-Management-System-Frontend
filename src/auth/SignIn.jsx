@@ -5,16 +5,33 @@ import { motion } from "framer-motion";
 import { FiMail, FiLock, FiArrowLeft } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import GoogleOAuthButton from "./GoogleOAuthButton";
+import GitHubOAuthButton from "./GithubOAuthButton";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast.success("Signed in successfully!");
-    navigate("/dashboard");
+
+    if (!email.trim() || !password.trim()) {
+      toast.error("Please enter both email and password");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:2025/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      toast.success("Signed in!");
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
   return (
@@ -144,6 +161,7 @@ const SignIn = () => {
 
             <div className="mt-6 grid grid-cols-1 gap-3">
               <GoogleOAuthButton />
+              <GitHubOAuthButton />
             </div>
           </div>
 

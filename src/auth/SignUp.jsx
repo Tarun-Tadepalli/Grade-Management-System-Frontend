@@ -17,14 +17,24 @@ const SignUp = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords don't match");
       return;
     }
-    toast.success("Account created successfully!");
-    navigate("/dashboard");
+    try {
+      const res = await fetch("http://localhost:2025/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      toast.success("Account created!");
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
   return (
