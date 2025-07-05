@@ -30,8 +30,8 @@ const SignUp = () => {
         body: JSON.stringify(formData),
       });
       if (!res.ok) throw new Error(await res.text());
-      toast.success("Account created!");
-      navigate("/dashboard");
+      toast.success("Account created! Please check your email to verify.");
+      navigate("/verify-info");
     } catch (err) {
       toast.error(err.message);
     }
