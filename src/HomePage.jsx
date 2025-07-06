@@ -1,118 +1,420 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiBook,
   FiEdit2,
   FiZap,
-  FiBarChart2,
   FiSun,
   FiMoon,
   FiArrowRight,
+  FiChevronRight,
+  FiCheck,
+  FiSave,
 } from "react-icons/fi";
 import { FaGoogle, FaChalkboardTeacher } from "react-icons/fa";
 import { PiGraduationCapFill } from "react-icons/pi";
-import { Link } from "react-router-dom";
+import SignIn from "./auth/SignIn";
+import SignUp from "./auth/SignUp";  // Add this import
+import backgroundImage from "./6img.webp";
 
-// Vector illustrations (would be separate SVG files in reality)
-const EvaluationIllustration = () => (
-  <svg viewBox="0 0 500 300" className="w-full h-auto">
-    {/* Modern vector illustration of grading dashboard */}
-    <rect
-      x="50"
-      y="50"
-      width="400"
-      height="200"
-      rx="10"
-      fill="#6366F1"
-      opacity="0.1"
-    />
-    <rect x="70" y="80" width="120" height="40" rx="5" fill="#4F46E5" />
-    <rect x="70" y="140" width="360" height="20" rx="5" fill="#A5B4FC" />
-    <rect x="70" y="180" width="300" height="20" rx="5" fill="#A5B4FC" />
-    <rect x="70" y="220" width="280" height="20" rx="5" fill="#A5B4FC" />
-    <circle cx="400" cy="100" r="30" fill="#8B5CF6" />
-  </svg>
-);
+// Custom hook for dark mode with default as dark
+const useDarkMode = () => {
+  const [darkMode, setDarkMode] = useState(true);
 
-const FeatureIllustration = ({ index }) => {
-  const illustrations = [
-    <svg key="0" viewBox="0 0 200 200" className="w-40 h-40">
-      <rect x="30" y="50" width="140" height="120" rx="10" fill="#E0E7FF" />
-      <rect x="50" y="70" width="100" height="20" rx="5" fill="#4F46E5" />
-      <rect x="50" y="100" width="80" height="15" rx="5" fill="#8B5CF6" />
-      <rect x="50" y="125" width="60" height="15" rx="5" fill="#C4B5FD" />
-    </svg>,
-    <svg key="1" viewBox="0 0 200 200" className="w-40 h-40">
-      <rect x="40" y="40" width="120" height="120" rx="10" fill="#F5F3FF" />
-      <path
-        d="M60 80 L140 80 L140 160 L60 160 Z"
-        fill="#8B5CF6"
-        opacity="0.3"
-      />
-      <circle cx="100" cy="100" r="30" fill="#7C3AED" />
-      <line
-        x1="100"
-        y1="60"
-        x2="100"
-        y2="140"
-        stroke="#4F46E5"
-        strokeWidth="4"
-      />
-      <line
-        x1="60"
-        y1="100"
-        x2="140"
-        y2="100"
-        stroke="#4F46E5"
-        strokeWidth="4"
-      />
-    </svg>,
-    <svg key="2" viewBox="0 0 200 200" className="w-40 h-40">
-      <circle cx="100" cy="100" r="80" fill="#EDE9FE" />
-      <path d="M100 40 A60 60 0 0 1 160 100 L100 100 Z" fill="#8B5CF6" />
-      <path d="M100 160 A60 60 0 0 1 40 100 L100 100 Z" fill="#7C3AED" />
-      <circle cx="100" cy="100" r="30" fill="#5B21B6" />
-    </svg>,
-  ];
-  return illustrations[index];
+  useEffect(() => {
+    const isDark = localStorage.getItem('darkMode') !== 'false';
+    setDarkMode(isDark);
+    document.documentElement.classList.toggle('dark', isDark);
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem('darkMode', newMode);
+    document.documentElement.classList.toggle('dark', newMode);
+  };
+
+  return [darkMode, toggleDarkMode];
+};
+
+// Particle Background Component (keep this the same)
+const ParticleBackground = ({ darkMode }) => {
+  const particles = Array.from({ length: 30 }).map((_, i) => ({
+    id: i,
+    size: Math.random() * 5 + 1,
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+    delay: Math.random() * 5,
+    duration: Math.random() * 15 + 10,
+  }));
+
+  return (
+    <div className="fixed inset-0 overflow-hidden -z-10">
+      {particles.map((particle) => (
+        <motion.div
+          key={particle.id}
+          className={`absolute rounded-full ${darkMode ? "bg-indigo-400/20" : "bg-indigo-600/10"}`}
+          style={{
+            width: `${particle.size}px`,
+            height: `${particle.size}px`,
+            left: `${particle.left}%`,
+            top: `${particle.top}%`,
+          }}
+          initial={{ 
+            y: 0,
+            x: 0,
+            opacity: 0 
+          }}
+          animate={{ 
+            y: [0, -100, -200, -300],
+            x: [0, Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50],
+            opacity: [0, 0.8, 0.5, 0] 
+          }}
+          transition={{
+            delay: particle.delay,
+            duration: particle.duration,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+// Solution Evaluation Component (keep this the same)
+const SolutionEvaluator = ({ darkMode }) => {
+  const [activeTab, setActiveTab] = useState(0);
+  const [subject, setSubject] = useState("CS101 - Algorithms");
+  const [solutions, setSolutions] = useState([
+    {
+      id: 1,
+      method: "Recursive Approach",
+      marks: [
+        { criteria: "Correctness", score: 8, max: 10 },
+        { criteria: "Efficiency", score: 6, max: 10 },
+        { criteria: "Readability", score: 9, max: 10 },
+      ],
+      feedback: "Good implementation but could optimize time complexity"
+    },
+    {
+      id: 2,
+      method: "Dynamic Programming",
+      marks: [
+        { criteria: "Correctness", score: 10, max: 10 },
+        { criteria: "Efficiency", score: 9, max: 10 },
+        { criteria: "Readability", score: 7, max: 10 },
+      ],
+      feedback: "Excellent optimization, could improve code documentation"
+    },
+    {
+      id: 3,
+      method: "Iterative Solution",
+      marks: [
+        { criteria: "Correctness", score: 7, max: 10 },
+        { criteria: "Efficiency", score: 8, max: 10 },
+        { criteria: "Readability", score: 8, max: 10 },
+      ],
+      feedback: "Solid implementation, handles edge cases well"
+    }
+  ]);
+  const [newMethod, setNewMethod] = useState("");
+
+  const addSolutionMethod = () => {
+    if (newMethod.trim() === "") return;
+    
+    const newSolution = {
+      id: solutions.length + 1,
+      method: newMethod,
+      marks: [
+        { criteria: "Correctness", score: 0, max: 10 },
+        { criteria: "Efficiency", score: 0, max: 10 },
+        { criteria: "Readability", score: 0, max: 10 },
+      ],
+      feedback: ""
+    };
+    
+    setSolutions([...solutions, newSolution]);
+    setNewMethod("");
+    setActiveTab(solutions.length);
+  };
+
+  const updateScore = (solutionId, criteria, value) => {
+    setSolutions(solutions.map(solution => {
+      if (solution.id === solutionId) {
+        return {
+          ...solution,
+          marks: solution.marks.map(mark => 
+            mark.criteria === criteria 
+              ? { ...mark, score: Math.min(parseInt(value || 0), mark.max) } 
+              : mark
+          )
+        };
+      }
+      return solution;
+    }));
+  };
+
+  const updateFeedback = (solutionId, feedback) => {
+    setSolutions(solutions.map(solution => 
+      solution.id === solutionId ? { ...solution, feedback } : solution
+    ));
+  };
+
+  const calculateTotal = (marks) => {
+    return marks.reduce((sum, mark) => sum + mark.score, 0);
+  };
+
+  const calculateMaxTotal = (marks) => {
+    return marks.reduce((sum, mark) => sum + mark.max, 0);
+  };
+
+  const saveEvaluations = () => {
+    console.log("Saving evaluations:", { subject, solutions });
+    alert("Evaluations saved successfully!");
+  };
+
+  return (
+    <motion.div 
+      className={`w-full h-full p-6 rounded-2xl ${darkMode ? "bg-gray-800/70 border-gray-700" : "bg-white border-gray-200"} shadow-xl border backdrop-blur-sm`}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.8, delay: 0.4 }}
+    >
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h2 className={`text-xl font-bold ${darkMode ? "text-white" : "text-gray-800"}`}>{subject}</h2>
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={newMethod}
+            onChange={(e) => setNewMethod(e.target.value)}
+            placeholder="Add solution method"
+            className={`px-3 py-2 rounded-lg text-sm ${darkMode ? "bg-gray-700 text-white" : "bg-gray-100 text-gray-800"} border ${darkMode ? "border-gray-600" : "border-gray-300"}`}
+          />
+          <button
+            onClick={addSolutionMethod}
+            className={`px-3 py-2 rounded-lg ${darkMode ? "bg-indigo-600 hover:bg-indigo-700" : "bg-indigo-500 hover:bg-indigo-600"} text-white text-sm`}
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      {solutions.length > 0 ? (
+        <>
+          <div className="flex overflow-x-auto pb-2 mb-6 gap-1">
+            {solutions.map((solution, index) => (
+              <button
+                key={solution.id}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                  activeTab === index 
+                    ? (darkMode ? "bg-indigo-600 text-white" : "bg-indigo-100 text-indigo-700") 
+                    : (darkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-700")
+                }`}
+                onClick={() => setActiveTab(index)}
+              >
+                {solution.method}
+              </button>
+            ))}
+          </div>
+          
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="h-96 overflow-y-auto"
+            >
+              {solutions[activeTab] && (
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className={`text-lg font-semibold ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                      Evaluation Criteria for {solutions[activeTab].method}
+                    </h3>
+                    
+                    {solutions[activeTab].marks.map((mark, i) => (
+                      <motion.div
+                        key={i}
+                        className="space-y-2"
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 * i }}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className={`text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                            {mark.criteria} 
+                            <span className="text-xs opacity-70 ml-2">(Max: {mark.max})</span>
+                          </span>
+                          <input
+                            type="number"
+                            min="0"
+                            max={mark.max}
+                            value={mark.score}
+                            onChange={(e) => updateScore(solutions[activeTab].id, mark.criteria, e.target.value)}
+                            className={`w-16 px-2 py-1 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-gray-100 text-gray-800"} border ${darkMode ? "border-gray-600" : "border-gray-300"} text-right`}
+                          />
+                        </div>
+                        <motion.div 
+                          className={`w-full h-2 rounded-full ${darkMode ? "bg-gray-700" : "bg-gray-200"} overflow-hidden`}
+                          initial={{ scaleX: 0, transformOrigin: "left center" }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ delay: 0.2 + i * 0.1 }}
+                        >
+                          <motion.div 
+                            className="h-full rounded-full"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${(mark.score / mark.max) * 100}%` }}
+                            transition={{ 
+                              duration: 0.8,
+                              delay: 0.3 + i * 0.1,
+                              type: "spring",
+                              damping: 10
+                            }}
+                            style={{
+                              background: (mark.score / mark.max) > 0.89 
+                                ? (darkMode ? "#4F46E5" : "#6366F1") 
+                                : (mark.score / mark.max) > 0.69 
+                                ? (darkMode ? "#7C3AED" : "#8B5CF6") 
+                                : (darkMode ? "#A78BFA" : "#A78BFA")
+                            }}
+                          />
+                        </motion.div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className={`flex justify-between items-center p-3 rounded-lg ${darkMode ? "bg-gradient-to-r from-indigo-500/10 to-violet-500/10" : "bg-gradient-to-r from-indigo-100 to-violet-100"}`}>
+                    <span className={`font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Total Score:</span>
+                    <span className={`text-xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
+                      {calculateTotal(solutions[activeTab].marks)} / {calculateMaxTotal(solutions[activeTab].marks)}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h4 className={`text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Feedback</h4>
+                    <textarea
+                      value={solutions[activeTab].feedback}
+                      onChange={(e) => updateFeedback(solutions[activeTab].id, e.target.value)}
+                      className={`w-full p-3 rounded-lg ${darkMode ? "bg-gray-700 text-white" : "bg-gray-100 text-gray-800"} border ${darkMode ? "border-gray-600" : "border-gray-300"}`}
+                      rows="3"
+                      placeholder="Enter detailed feedback for this solution..."
+                    />
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          <motion.button
+            onClick={saveEvaluations}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className={`mt-6 w-full py-3 rounded-lg flex items-center justify-center gap-2 ${
+              darkMode ? "bg-indigo-600 hover:bg-indigo-700" : "bg-indigo-500 hover:bg-indigo-600"
+            } text-white font-medium`}
+          >
+            <FiSave /> Save Evaluations
+          </motion.button>
+        </>
+      ) : (
+        <div className="h-64 flex items-center justify-center">
+          <p className={`${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+            No solution methods added yet. Add your first solution method to begin evaluation.
+          </p>
+        </div>
+      )}
+    </motion.div>
+  );
 };
 
 const HomePage = () => {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, toggleDarkMode] = useDarkMode();
   const [activeFeature, setActiveFeature] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);  // Add this state
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % 3);
+      if (!isHovering) {
+        setActiveFeature((prev) => (prev + 1) % 3);
+      }
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isHovering]);
+
+  const features = [
+    {
+      icon: <FiBook className="text-3xl" />,
+      title: "Multi-Method Evaluation",
+      description: "Evaluate different solution approaches with customized criteria",
+      details: {
+        title: "Comprehensive Solution Analysis",
+        items: [
+          "Support for multiple solution methods per problem",
+          "Custom evaluation criteria for each approach",
+          "Detailed feedback for each solution variant"
+        ]
+      }
+    },
+    {
+      icon: <FiEdit2 className="text-3xl" />,
+      title: "Structured Rubrics",
+      description: "Create detailed evaluation criteria with weighted scoring",
+      details: {
+        title: "Consistent Evaluation Standards",
+        items: [
+          "Define criteria like correctness, efficiency, readability",
+          "Set maximum scores for each evaluation dimension",
+          "Standardized rubrics across all evaluations"
+        ]
+      }
+    },
+    {
+      icon: <FiZap className="text-3xl" />,
+      title: "Data Insights",
+      description: "Analyze performance across different solution methods",
+      details: {
+        title: "Performance Analytics",
+        items: [
+          "Compare scores across different approaches",
+          "Identify most effective solution methods",
+          "Track improvement over multiple attempts"
+        ]
+      }
+    }
+  ];
 
   return (
-    <div
-      className={`min-h-screen transition-colors duration-300 ${
-        darkMode
-          ? "bg-gray-900 text-gray-100"
-          : "bg-gradient-to-br from-gray-50 to-indigo-50 text-gray-900"
-      }`}
-    >
+    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? "dark bg-gray-900" : "bg-white"}`}>
+      <ParticleBackground darkMode={darkMode} />
+      
       {/* Navigation */}
-      <nav className="container mx-auto px-6 py-6 flex justify-between items-center">
-        <div className="flex items-center space-x-2">
-          <PiGraduationCapFill className="text-3xl text-indigo-600" />
-          <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-            GradeEval Pro
+      <nav className="w-full px-4 sm:px-6 lg:px-12 py-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 relative">
+        <motion.div 
+          className="flex items-center space-x-2"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <PiGraduationCapFill className="text-3xl text-indigo-600 dark:text-indigo-400" />
+          <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">
+            CodeGrader Pro
           </span>
-        </div>
-        <div className="flex items-center space-x-6">
+        </motion.div>
+        
+        <motion.div 
+          className="flex items-center space-x-6"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`p-2 rounded-full ${
-              darkMode
-                ? "bg-gray-700 text-amber-300"
-                : "bg-gray-200 text-indigo-700"
-            }`}
+            onClick={toggleDarkMode}
+            className={`p-2 rounded-full transition-all ${darkMode ? "bg-gray-700 text-amber-300 hover:bg-gray-600" : "bg-gray-200 text-indigo-700 hover:bg-gray-300"}`}
+            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
           >
             {darkMode ? (
               <FiSun className="text-xl" />
@@ -120,147 +422,181 @@ const HomePage = () => {
               <FiMoon className="text-xl" />
             )}
           </button>
-          <Link to="/signin">
-            <button className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition shadow-md">
-              Sign In
-            </button>
-          </Link>
-        </div>
+          
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowSignIn(true)}
+            className="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-lg transition-all shadow-md hover:shadow-indigo-500/30 flex items-center gap-2"
+          >
+            Sign In <FiChevronRight />
+          </motion.button>
+        </motion.div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="container mx-auto px-6 py-12 md:py-20">
-        <div className="flex flex-col lg:flex-row items-center gap-12">
+      {/* Hero Section with Conditional Background */}
+      <section 
+        className={`w-full px-4 sm:px-6 lg:px-12 py-10 sm:py-16 md:py-20 relative ${darkMode ? "bg-gray-900" : "bg-white"}`}
+        style={darkMode ? {
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        } : {}}
+      >
+        {/* Dark overlay for dark mode to ensure text readability */}
+        {darkMode && (
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-0"></div>
+        )}
+        
+        <div className="flex flex-col lg:flex-row items-center gap-12 relative z-10">
+          {/* Text content */}
           <motion.div
             className="lg:w-1/2"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-              Precision Grading <br />
-              <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-                Made Simple
-              </span>
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-lg">
-              The modern evaluation system that helps educators create
-              structured assessments, track student progress, and deliver
-              meaningful feedback efficiently.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 mb-16">
-              <Link to="/signup">
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl hover:shadow-lg transition-all shadow-md hover:shadow-indigo-500/30 flex items-center gap-2"
-                >
-                  Get Started <FiArrowRight />
-                </motion.button>
-              </Link>
-              <Link to="/signin">
-                <button className="px-8 py-3.5 flex items-center justify-center gap-2 bg-white text-gray-800 rounded-xl hover:bg-gray-50 transition border border-gray-200 shadow-sm">
-                  <FaGoogle className="text-blue-500" /> Sign in with Google
-                </button>
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex -space-x-2">
-                {[1, 2, 3].map((item) => (
-                  <div
-                    key={item}
-                    className="w-10 h-10 rounded-full bg-indigo-100 border-2 border-white"
-                  ></div>
-                ))}
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Trusted by 500+ educators worldwide
-              </p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="lg:w-1/2 mt-12 lg:mt-0"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
+            transition={{ duration: 0.6 }}
           >
-            <div
-              className={`p-1 rounded-2xl ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              } shadow-xl`}
+            <motion.span 
+              className="inline-block px-3 py-1 text-sm font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200 mb-4"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
             >
-              <EvaluationIllustration />
-            </div>
+              Advanced Solution Evaluator
+            </motion.span>
+            
+            <motion.h1 
+              className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight dark:text-white text-gray-800"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              Evaluate Multiple <br />
+              <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">
+                Solution Approaches
+              </span>
+            </motion.h1>
+            
+            <motion.p 
+              className="text-xl dark:text-gray-300 text-gray-600 mb-10"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              The comprehensive evaluation system that helps educators assess different solution methods for the same problem with structured criteria and detailed feedback.
+            </motion.p>
+            
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 mb-16"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <motion.button
+                whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.3)" }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowSignUp(true)}  // Changed to open SignUp
+                className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl hover:shadow-lg transition-all shadow-md hover:shadow-indigo-500/30 flex items-center justify-center gap-2 text-lg font-medium"
+              >
+                Get Started <FiArrowRight />
+              </motion.button>
+              
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowSignIn(true)}
+                className="px-8 py-3.5 flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700 shadow-sm text-lg font-medium"
+              >
+                <FaGoogle className="text-blue-500" /> Sign in with Google
+              </motion.button>
+            </motion.div>
+
+            <motion.div
+              className="text-sm text-gray-500 dark:text-gray-400"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+            >
+              <p>Developed by: T. Tarun & M. Kowsik</p>
+            </motion.div>
+          </motion.div>
+
+          {/* Solution Evaluator Component */}
+          <motion.div
+            className="lg:w-1/2 h-[600px]"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <SolutionEvaluator darkMode={darkMode} />
           </motion.div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className={`py-16 ${darkMode ? "bg-gray-800" : "bg-white"}`}>
-        <div className="container mx-auto px-6">
+      <section className={`py-20 ${darkMode ? "bg-gray-800/50" : "bg-gray-50"} backdrop-blur-sm relative`}>
+        <div className="w-full px-4 sm:px-6 lg:px-12">
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <span className="inline-block px-3 py-1 text-sm font-medium rounded-full bg-indigo-100 text-indigo-800 mb-4">
-              Powerful Features
-            </span>
-            <h2 className="text-3xl font-bold mb-4">
-              Designed for <span className="text-indigo-600">Educators</span>
-            </h2>
-            <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-              Streamline your evaluation process with our comprehensive toolset
-            </p>
+            <motion.span 
+              className="inline-block px-3 py-1 text-sm font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200 mb-4"
+              initial={{ scale: 0.8, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Key Features
+            </motion.span>
+            
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-4"
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+            >
+              Designed for <span className="text-indigo-600 dark:text-indigo-400">Computer Science</span> Educators
+            </motion.h2>
+            
+            <motion.p 
+              className={`text-lg ${darkMode ? "text-gray-400" : "text-gray-500"} max-w-2xl mx-auto`}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+            >
+              Specialized tools for evaluating multiple solution approaches to programming problems
+            </motion.p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {[
-              {
-                icon: <FiBook className="text-3xl mb-4 text-indigo-600" />,
-                title: "Subject Management",
-                description:
-                  "Organize courses by departments with customizable structures",
-              },
-              {
-                icon: <FiEdit2 className="text-3xl mb-4 text-violet-600" />,
-                title: "Rubric Builder",
-                description:
-                  "Create detailed evaluation criteria with weighted scoring",
-              },
-              {
-                icon: <FiZap className="text-3xl mb-4 text-blue-600" />,
-                title: "AI Assistance",
-                description: "Get smart suggestions for assessment criteria",
-              },
-            ].map((feature, index) => (
+            {features.map((feature, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
                 viewport={{ once: true }}
-                className={`p-8 rounded-xl ${
-                  darkMode ? "bg-gray-700" : "bg-gray-50"
-                } hover:shadow-lg transition cursor-pointer ${
-                  activeFeature === index ? "ring-2 ring-indigo-500" : ""
-                }`}
+                className={`p-8 rounded-xl transition-all ${darkMode ? "bg-gray-700/50 hover:bg-gray-700" : "bg-white hover:bg-gray-100"} hover:shadow-lg cursor-pointer border ${activeFeature === index ? "border-indigo-500 dark:border-indigo-400" : "border-transparent"}`}
                 whileHover={{ y: -5 }}
                 onClick={() => setActiveFeature(index)}
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => setIsHovering(false)}
               >
                 <div className="flex flex-col items-center text-center">
-                  {feature.icon}
-                  <h3 className="text-xl font-semibold mb-3">
+                  <div className={`p-3 rounded-full mb-4 ${darkMode ? "bg-indigo-900/50 text-indigo-300" : "bg-indigo-100 text-indigo-600"}`}>
+                    {feature.icon}
+                  </div>
+                  <h3 className={`text-xl font-semibold mb-3 ${darkMode ? "text-white" : "text-gray-800"}`}>
                     {feature.title}
                   </h3>
-                  <p
-                    className={`${
-                      darkMode ? "text-gray-300" : "text-gray-600"
-                    }`}
-                  >
+                  <p className={`${darkMode ? "text-gray-300" : "text-gray-600"}`}>
                     {feature.description}
                   </p>
                 </div>
@@ -275,99 +611,78 @@ const HomePage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className={`p-8 rounded-2xl ${
-                darkMode ? "bg-gray-700" : "bg-indigo-50"
-              } shadow-lg`}
+              transition={{ duration: 0.4 }}
+              className={`p-8 rounded-2xl ${darkMode ? "bg-gray-700/50 border-gray-600" : "bg-white border-gray-200"} border shadow-lg backdrop-blur-sm`}
             >
               <div className="flex flex-col lg:flex-row items-center gap-12">
-                <div className="lg:w-1/2">
-                  {activeFeature === 0 && (
-                    <>
-                      <h3 className="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-300">
-                        Organize Your Curriculum
-                      </h3>
-                      <ul className="space-y-3 text-gray-700 dark:text-gray-300">
-                        <li className="flex items-start">
-                          <span className="text-indigo-500 mr-2">•</span>
-                          <span>
-                            Hierarchical subject organization by department and
-                            category
-                          </span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-indigo-500 mr-2">•</span>
-                          <span>
-                            Customizable grading templates for different course
-                            types
-                          </span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-indigo-500 mr-2">•</span>
-                          <span>
-                            Collaborative environment for department-wide
-                            standards
-                          </span>
-                        </li>
-                      </ul>
-                    </>
-                  )}
-                  {activeFeature === 1 && (
-                    <>
-                      <h3 className="text-2xl font-bold mb-4 text-violet-700 dark:text-violet-300">
-                        Build Better Rubrics
-                      </h3>
-                      <ul className="space-y-3 text-gray-700 dark:text-gray-300">
-                        <li className="flex items-start">
-                          <span className="text-violet-500 mr-2">•</span>
-                          <span>
-                            Create multi-dimensional evaluation criteria
-                          </span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-violet-500 mr-2">•</span>
-                          <span>
-                            Set weighted scoring for different competency levels
-                          </span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-violet-500 mr-2">•</span>
-                          <span>
-                            Standardized rubrics across your institution
-                          </span>
-                        </li>
-                      </ul>
-                    </>
-                  )}
-                  {activeFeature === 2 && (
-                    <>
-                      <h3 className="text-2xl font-bold mb-4 text-blue-700 dark:text-blue-300">
-                        Intelligent Assistance
-                      </h3>
-                      <ul className="space-y-3 text-gray-700 dark:text-gray-300">
-                        <li className="flex items-start">
-                          <span className="text-blue-500 mr-2">•</span>
-                          <span>
-                            AI-generated suggestions for evaluation criteria
-                          </span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-blue-500 mr-2">•</span>
-                          <span>
-                            Automated rubric generation based on learning
-                            objectives
-                          </span>
-                        </li>
-                        <li className="flex items-start">
-                          <span className="text-blue-500 mr-2">•</span>
-                          <span>Bias detection in assessment design</span>
-                        </li>
-                      </ul>
-                    </>
-                  )}
+                {/* Image on the right */}
+                <div className="lg:w-1/2 lg:order-2 h-[400px] flex items-center justify-center">
+                  <div className={`w-full h-full p-6 rounded-xl ${darkMode ? "bg-gray-800/50" : "bg-white"} shadow-lg border ${darkMode ? "border-gray-700" : "border-gray-200"} flex items-center justify-center`}>
+                    {activeFeature === 0 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-center"
+                      >
+                        <div className="text-5xl mb-4">📊</div>
+                        <h3 className={`text-xl font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-800"}`}>Multiple Methods</h3>
+                        <p className={darkMode ? "text-gray-300" : "text-gray-600"}>Compare recursive, iterative, and DP solutions</p>
+                      </motion.div>
+                    )}
+                    {activeFeature === 1 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-center"
+                      >
+                        <div className="text-5xl mb-4">📝</div>
+                        <h3 className={`text-xl font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-800"}`}>Detailed Rubrics</h3>
+                        <p className={darkMode ? "text-gray-300" : "text-gray-600"}>Custom criteria for each solution type</p>
+                      </motion.div>
+                    )}
+                    {activeFeature === 2 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-center"
+                      >
+                        <div className="text-5xl mb-4">🔍</div>
+                        <h3 className={`text-xl font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-800"}`}>Performance Insights</h3>
+                        <p className={darkMode ? "text-gray-300" : "text-gray-600"}>Identify most effective approaches</p>
+                      </motion.div>
+                    )}
+                  </div>
                 </div>
-                <div className="lg:w-1/2 flex justify-center">
-                  <FeatureIllustration index={activeFeature} />
+                
+                {/* Text content on the left */}
+                <div className="lg:w-1/2 lg:order-1">
+                  <motion.h3 
+                    className="text-2xl font-bold mb-6 text-indigo-700 dark:text-indigo-300"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    {features[activeFeature].details.title}
+                  </motion.h3>
+                  
+                  <ul className="space-y-4">
+                    {features[activeFeature].details.items.map((item, i) => (
+                      <motion.li 
+                        key={i}
+                        className="flex items-start"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 + i * 0.1 }}
+                      >
+                        <span className={`p-1 rounded-full mr-3 mt-1 ${darkMode ? "bg-indigo-900/50 text-indigo-300" : "bg-indigo-100 text-indigo-600"}`}>
+                          <FiCheck className="text-sm" />
+                        </span>
+                        <span className={darkMode ? "text-gray-300" : "text-gray-700"}>
+                          {item}
+                        </span>
+                      </motion.li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </motion.div>
@@ -376,98 +691,182 @@ const HomePage = () => {
       </section>
 
       {/* Testimonial Section */}
-      <section
-        className={`py-20 ${darkMode ? "bg-gray-900" : "bg-indigo-100"}`}
-      >
+      <section className={`py-20 ${darkMode ? "bg-gray-900/50" : "bg-indigo-100/50"} backdrop-blur-sm relative`}>
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center">
-            <FaChalkboardTeacher className="text-4xl text-indigo-600 mx-auto mb-6" />
-            <blockquote className="text-2xl font-medium mb-8 text-gray-800 dark:text-gray-200">
-              "GradeEval Pro has transformed how our department handles
-              assessments. We've reduced grading time by 40% while improving the
-              quality of feedback."
-            </blockquote>
-            <div className="flex items-center justify-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-indigo-500"></div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <FaChalkboardTeacher className="text-4xl text-indigo-600 dark:text-indigo-400 mx-auto mb-6" />
+            </motion.div>
+            
+            <motion.blockquote 
+              className={`text-2xl md:text-3xl font-medium mb-8 ${darkMode ? "text-gray-200" : "text-gray-800"} leading-relaxed`}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              "This system has revolutionized how we evaluate different solution approaches in our algorithms course. We can now objectively compare recursive vs. iterative solutions with consistent criteria."
+            </motion.blockquote>
+            
+            <motion.div 
+              className="flex items-center justify-center gap-4"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+            >
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 flex items-center justify-center text-white">
+                TJ
+              </div>
               <div className="text-left">
-                <p className="font-semibold">Dr. Sarah Johnson</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Chair, Computer Science Department
+                <p className={`font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>Tarun T</p>
+                <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  Computer Science Department
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className={`py-20 ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+      <section className={`py-20 ${darkMode ? "bg-gray-800/50" : "bg-white"} backdrop-blur-sm relative`}>
         <div className="container mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
             className="max-w-2xl mx-auto"
           >
-            <h2 className="text-3xl font-bold mb-6">
-              Ready to Elevate Your Grading Process?
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-10">
-              Join thousands of educators using GradeEval Pro to save time and
-              enhance student learning outcomes.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-6"
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Ready to Transform Your Evaluations?
+            </motion.h2>
+            
+            <motion.p 
+              className={`text-xl ${darkMode ? "text-gray-300" : "text-gray-600"} mb-10`}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+            >
+              Join educators using CodeGrader Pro to objectively assess multiple solution approaches.
+            </motion.p>
+            
+            <motion.div 
+              className="flex flex-col sm:flex-row justify-center gap-4"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+            >
               <motion.button
-                whileHover={{ scale: 1.03 }}
+                whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.3)" }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => setShowSignUp(true)}  // Changed to open SignUp
                 className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl hover:shadow-lg transition-all shadow-md hover:shadow-indigo-500/30 text-lg font-medium"
               >
                 Start Free Trial
               </motion.button>
-              <button className="px-8 py-4 border-2 border-indigo-600 text-indigo-600 rounded-xl hover:bg-indigo-50 transition text-lg font-medium">
+              
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                className={`px-8 py-4 border-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400 rounded-xl ${darkMode ? "hover:bg-gray-800" : "hover:bg-indigo-50"} transition text-lg font-medium`}
+              >
                 Schedule Demo
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className={`py-12 ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
+      <footer className={`py-12 ${darkMode ? "bg-gray-900/80" : "bg-gray-50"} backdrop-blur-sm border-t ${darkMode ? "border-gray-800" : "border-gray-200"} relative`}>
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-6 md:mb-0">
-              <PiGraduationCapFill className="text-2xl text-indigo-600" />
-              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-                GradeEval Pro
+            <motion.div 
+              className="flex items-center space-x-2 mb-6 md:mb-0"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              <PiGraduationCapFill className="text-2xl text-indigo-600 dark:text-indigo-400" />
+              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">
+                CodeGrader Pro
               </span>
-            </div>
-            <div className="flex space-x-6">
-              <a
-                href="#"
-                className="text-gray-600 dark:text-gray-400 hover:text-indigo-600"
-              >
-                Privacy
-              </a>
-              <a
-                href="#"
-                className="text-gray-600 dark:text-gray-400 hover:text-indigo-600"
-              >
-                Terms
-              </a>
-              <a
-                href="#"
-                className="text-gray-600 dark:text-gray-400 hover:text-indigo-600"
-              >
-                Contact
-              </a>
-            </div>
+            </motion.div>
+            
+            <motion.div 
+              className="flex space-x-6"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ staggerChildren: 0.1 }}
+            >
+              {["Privacy", "Terms", "Contact"].map((item, i) => (
+                <motion.a
+                  key={i}
+                  href="#"
+                  className={`${darkMode ? "text-gray-400 hover:text-indigo-400" : "text-gray-600 hover:text-indigo-600"} transition`}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 + i * 0.1 }}
+                >
+                  {item}
+                </motion.a>
+              ))}
+            </motion.div>
           </div>
-          <div className="border-t border-gray-200 dark:border-gray-700 mt-8 pt-8 text-center text-gray-500 dark:text-gray-400">
-            © {new Date().getFullYear()} GradeEval Pro. All rights reserved.
-          </div>
+          
+          <motion.div 
+            className={`border-t ${darkMode ? "border-gray-800" : "border-gray-200"} mt-8 pt-8 text-center ${darkMode ? "text-gray-400" : "text-gray-500"}`}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            © {new Date().getFullYear()} CodeGrader Pro. Developed by T. Tarun & M. Kowsik. All rights reserved.
+          </motion.div>
         </div>
       </footer>
+
+      {/* Sign In Modal */}
+      <AnimatePresence>
+        {showSignIn && (
+          <SignIn 
+            onClose={() => setShowSignIn(false)} 
+            onSignUpClick={() => {
+              setShowSignIn(false);
+              setShowSignUp(true);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sign Up Modal */}
+      <AnimatePresence>
+        {showSignUp && (
+          <SignUp 
+            onClose={() => setShowSignUp(false)} 
+            onSignInClick={() => {
+              setShowSignUp(false);
+              setShowSignIn(true);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
