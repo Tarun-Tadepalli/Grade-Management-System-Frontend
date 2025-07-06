@@ -8,6 +8,8 @@ import { Route, Routes } from "react-router-dom";
 import SignIn from "./auth/SignIn";
 import Dashboard from "./Dashboard";
 import SignUp from "./auth/SignUp";
+import VerifyInfo from "./auth/VerifyInfo";
+import EmailVerificationPage from "./auth/VerifyEmail";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/verify-info" element={<VerifyInfo />} />
+      <Route path="/verify-email" element={<EmailVerificationPage />} />
     </Routes>
   );
 }
