@@ -3,16 +3,39 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReCAPTCHA from "react-google-recaptcha";
 import { FiX, FiArrowRight } from "react-icons/fi";
 import { FaGoogle, FaGithub, FaFacebook } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+import { ToastContainer, toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import GoogleOAuthButton from "./GoogleOAuthButton";
+import GitHubOAuthButton from "./GithubOAuthButton";
 
 const SignIn = ({ onClose, onSignUpClick }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleSignIn = (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
-    // Handle sign in logic
-    console.log("Signing in with:", { email, password });
+
+    if (!email.trim() || !password.trim()) {
+      toast.error("Please enter both email and password");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:2025/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      toast.success("Signed in!");
+      navigate("/addq");
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
   const handleCaptchaChange = (value) => {
@@ -154,19 +177,9 @@ const SignIn = ({ onClose, onSignUpClick }) => {
                 </div>
 
                 <div className="mt-6 grid grid-cols-3 gap-3">
-                  <button
-                    type="button"
-                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition"
-                  >
-                    <FaGoogle className="text-red-500 text-lg" />
-                  </button>
+                  <GoogleOAuthButton />
 
-                  <button
-                    type="button"
-                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition"
-                  >
-                    <FaGithub className="text-gray-800 dark:text-gray-200 text-lg" />
-                  </button>
+                  <GitHubOAuthButton />
 
                   <button
                     type="button"
@@ -194,7 +207,9 @@ const SignIn = ({ onClose, onSignUpClick }) => {
             <motion.img
               src="https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?ixlib=rb-0.3.5&auto=format&fit=crop&w=1000&q=80"
               alt="Sign In Visual"
-              className={`w-full h-full object-cover ${imageLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-500`}
+              className={`w-full h-full object-cover ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              } transition-opacity duration-500`}
               onLoad={() => setImageLoaded(true)}
             />
             {!imageLoaded && (
@@ -215,6 +230,8 @@ const SignIn = ({ onClose, onSignUpClick }) => {
                 </p>
               </div>
             </motion.div>
+
+            <ToastContainer />
           </div>
         </motion.div>
       </motion.div>
