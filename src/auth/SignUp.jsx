@@ -3,18 +3,41 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReCAPTCHA from "react-google-recaptcha";
 import { FiX, FiArrowRight } from "react-icons/fi";
 import { FaGoogle, FaGithub, FaFacebook } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = ({ onClose }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const navigate = useNavigate();
 
-  const handleSignUp = (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle sign up logic
-    console.log("Signing up with:", { fullName, email, password, confirmPassword });
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+    try {
+      const res = await fetch("http://localhost:2025/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      toast.success("Account created! Please check your email to verify.");
+      navigate("/verify-info");
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
   const handleCaptchaChange = (value) => {
@@ -59,7 +82,9 @@ const SignUp = ({ onClose }) => {
             <motion.img
               src="https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?ixlib=rb-0.3.5&auto=format&fit=crop&w=1000&q=80"
               alt="Sign Up Visual"
-              className={`w-full h-full object-cover ${imageLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-500`}
+              className={`w-full h-full object-cover ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              } transition-opacity duration-500`}
               onLoad={() => setImageLoaded(true)}
             />
             {!imageLoaded && (
@@ -96,19 +121,20 @@ const SignUp = ({ onClose }) => {
                 Join our community and explore amazing features.
               </p>
 
-              <form onSubmit={handleSignUp} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label
-                    htmlFor="fullName"
+                    htmlFor="name"
                     className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
                     Full Name
                   </label>
                   <input
                     type="text"
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition"
                     placeholder="Enter your full name"
                     required
@@ -125,8 +151,9 @@ const SignUp = ({ onClose }) => {
                   <input
                     type="email"
                     id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition"
                     placeholder="Enter your email"
                     required
@@ -143,8 +170,9 @@ const SignUp = ({ onClose }) => {
                   <input
                     type="password"
                     id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition"
                     placeholder="Enter your password"
                     required
@@ -161,8 +189,9 @@ const SignUp = ({ onClose }) => {
                   <input
                     type="password"
                     id="confirmPassword"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition"
                     placeholder="Confirm your password"
                     required
@@ -230,6 +259,7 @@ const SignUp = ({ onClose }) => {
                 </a>
               </div>
             </motion.div>
+            <ToastContainer />
           </div>
         </motion.div>
       </motion.div>
@@ -237,4 +267,4 @@ const SignUp = ({ onClose }) => {
   );
 };
 
-export default SignUp;  
+export default SignUp;
