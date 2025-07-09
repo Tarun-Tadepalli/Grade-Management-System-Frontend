@@ -14,7 +14,7 @@ import {
 import { FaGoogle, FaChalkboardTeacher } from "react-icons/fa";
 import { PiGraduationCapFill } from "react-icons/pi";
 import SignIn from "./auth/SignIn";
-import SignUp from "./auth/SignUp";  // Add this import
+import SignUp from "./auth/SignUp"; // Add this import
 import backgroundImage from "./6img.webp";
 
 // Custom hook for dark mode with default as dark
@@ -22,16 +22,16 @@ const useDarkMode = () => {
   const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
-    const isDark = localStorage.getItem('darkMode') !== 'false';
+    const isDark = localStorage.getItem("darkMode") !== "false";
     setDarkMode(isDark);
-    document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.classList.toggle("dark", isDark);
   }, []);
 
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
-    localStorage.setItem('darkMode', newMode);
-    document.documentElement.classList.toggle('dark', newMode);
+    localStorage.setItem("darkMode", newMode);
+    document.documentElement.classList.toggle("dark", newMode);
   };
 
   return [darkMode, toggleDarkMode];
@@ -53,22 +53,29 @@ const ParticleBackground = ({ darkMode }) => {
       {particles.map((particle) => (
         <motion.div
           key={particle.id}
-          className={`absolute rounded-full ${darkMode ? "bg-indigo-400/20" : "bg-indigo-600/10"}`}
+          className={`absolute rounded-full ${
+            darkMode ? "bg-indigo-400/20" : "bg-indigo-600/10"
+          }`}
           style={{
             width: `${particle.size}px`,
             height: `${particle.size}px`,
             left: `${particle.left}%`,
             top: `${particle.top}%`,
           }}
-          initial={{ 
+          initial={{
             y: 0,
             x: 0,
-            opacity: 0 
+            opacity: 0,
           }}
-          animate={{ 
+          animate={{
             y: [0, -100, -200, -300],
-            x: [0, Math.random() * 100 - 50, Math.random() * 100 - 50, Math.random() * 100 - 50],
-            opacity: [0, 0.8, 0.5, 0] 
+            x: [
+              0,
+              Math.random() * 100 - 50,
+              Math.random() * 100 - 50,
+              Math.random() * 100 - 50,
+            ],
+            opacity: [0, 0.8, 0.5, 0],
           }}
           transition={{
             delay: particle.delay,
@@ -95,7 +102,7 @@ const SolutionEvaluator = ({ darkMode }) => {
         { criteria: "Efficiency", score: 6, max: 10 },
         { criteria: "Readability", score: 9, max: 10 },
       ],
-      feedback: "Good implementation but could optimize time complexity"
+      feedback: "Good implementation but could optimize time complexity",
     },
     {
       id: 2,
@@ -105,7 +112,7 @@ const SolutionEvaluator = ({ darkMode }) => {
         { criteria: "Efficiency", score: 9, max: 10 },
         { criteria: "Readability", score: 7, max: 10 },
       ],
-      feedback: "Excellent optimization, could improve code documentation"
+      feedback: "Excellent optimization, could improve code documentation",
     },
     {
       id: 3,
@@ -115,14 +122,14 @@ const SolutionEvaluator = ({ darkMode }) => {
         { criteria: "Efficiency", score: 8, max: 10 },
         { criteria: "Readability", score: 8, max: 10 },
       ],
-      feedback: "Solid implementation, handles edge cases well"
-    }
+      feedback: "Solid implementation, handles edge cases well",
+    },
   ]);
   const [newMethod, setNewMethod] = useState("");
 
   const addSolutionMethod = () => {
     if (newMethod.trim() === "") return;
-    
+
     const newSolution = {
       id: solutions.length + 1,
       method: newMethod,
@@ -131,34 +138,38 @@ const SolutionEvaluator = ({ darkMode }) => {
         { criteria: "Efficiency", score: 0, max: 10 },
         { criteria: "Readability", score: 0, max: 10 },
       ],
-      feedback: ""
+      feedback: "",
     };
-    
+
     setSolutions([...solutions, newSolution]);
     setNewMethod("");
     setActiveTab(solutions.length);
   };
 
   const updateScore = (solutionId, criteria, value) => {
-    setSolutions(solutions.map(solution => {
-      if (solution.id === solutionId) {
-        return {
-          ...solution,
-          marks: solution.marks.map(mark => 
-            mark.criteria === criteria 
-              ? { ...mark, score: Math.min(parseInt(value || 0), mark.max) } 
-              : mark
-          )
-        };
-      }
-      return solution;
-    }));
+    setSolutions(
+      solutions.map((solution) => {
+        if (solution.id === solutionId) {
+          return {
+            ...solution,
+            marks: solution.marks.map((mark) =>
+              mark.criteria === criteria
+                ? { ...mark, score: Math.min(parseInt(value || 0), mark.max) }
+                : mark
+            ),
+          };
+        }
+        return solution;
+      })
+    );
   };
 
   const updateFeedback = (solutionId, feedback) => {
-    setSolutions(solutions.map(solution => 
-      solution.id === solutionId ? { ...solution, feedback } : solution
-    ));
+    setSolutions(
+      solutions.map((solution) =>
+        solution.id === solutionId ? { ...solution, feedback } : solution
+      )
+    );
   };
 
   const calculateTotal = (marks) => {
@@ -175,25 +186,39 @@ const SolutionEvaluator = ({ darkMode }) => {
   };
 
   return (
-    <motion.div 
-      className={`w-full h-full p-6 rounded-2xl ${darkMode ? "bg-gray-800/70 border-gray-700" : "bg-white border-gray-200"} shadow-xl border backdrop-blur-sm`}
+    <motion.div
+      className={`w-full h-full p-6 rounded-2xl ${
+        darkMode ? "bg-gray-800/70 border-gray-700" : "bg-white border-gray-200"
+      } shadow-xl border backdrop-blur-sm`}
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.8, delay: 0.4 }}
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h2 className={`text-xl font-bold ${darkMode ? "text-white" : "text-gray-800"}`}>{subject}</h2>
+        <h2
+          className={`text-xl font-bold ${
+            darkMode ? "text-white" : "text-gray-800"
+          }`}
+        >
+          {subject}
+        </h2>
         <div className="flex items-center gap-2">
           <input
             type="text"
             value={newMethod}
             onChange={(e) => setNewMethod(e.target.value)}
             placeholder="Add solution method"
-            className={`px-3 py-2 rounded-lg text-sm ${darkMode ? "bg-gray-700 text-white" : "bg-gray-100 text-gray-800"} border ${darkMode ? "border-gray-600" : "border-gray-300"}`}
+            className={`px-3 py-2 rounded-lg text-sm ${
+              darkMode ? "bg-gray-700 text-white" : "bg-gray-100 text-gray-800"
+            } border ${darkMode ? "border-gray-600" : "border-gray-300"}`}
           />
           <button
             onClick={addSolutionMethod}
-            className={`px-3 py-2 rounded-lg ${darkMode ? "bg-indigo-600 hover:bg-indigo-700" : "bg-indigo-500 hover:bg-indigo-600"} text-white text-sm`}
+            className={`px-3 py-2 rounded-lg ${
+              darkMode
+                ? "bg-indigo-600 hover:bg-indigo-700"
+                : "bg-indigo-500 hover:bg-indigo-600"
+            } text-white text-sm`}
           >
             Add
           </button>
@@ -207,9 +232,13 @@ const SolutionEvaluator = ({ darkMode }) => {
               <button
                 key={solution.id}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                  activeTab === index 
-                    ? (darkMode ? "bg-indigo-600 text-white" : "bg-indigo-100 text-indigo-700") 
-                    : (darkMode ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-700")
+                  activeTab === index
+                    ? darkMode
+                      ? "bg-indigo-600 text-white"
+                      : "bg-indigo-100 text-indigo-700"
+                    : darkMode
+                    ? "text-gray-400 hover:text-white"
+                    : "text-gray-500 hover:text-gray-700"
                 }`}
                 onClick={() => setActiveTab(index)}
               >
@@ -217,7 +246,7 @@ const SolutionEvaluator = ({ darkMode }) => {
               </button>
             ))}
           </div>
-          
+
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
@@ -230,10 +259,14 @@ const SolutionEvaluator = ({ darkMode }) => {
               {solutions[activeTab] && (
                 <div className="space-y-6">
                   <div className="space-y-4">
-                    <h3 className={`text-lg font-semibold ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                    <h3
+                      className={`text-lg font-semibold ${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
                       Evaluation Criteria for {solutions[activeTab].method}
                     </h3>
-                    
+
                     {solutions[activeTab].marks.map((mark, i) => (
                       <motion.div
                         key={i}
@@ -243,41 +276,73 @@ const SolutionEvaluator = ({ darkMode }) => {
                         transition={{ delay: 0.1 * i }}
                       >
                         <div className="flex justify-between items-center">
-                          <span className={`text-sm font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
-                            {mark.criteria} 
-                            <span className="text-xs opacity-70 ml-2">(Max: {mark.max})</span>
+                          <span
+                            className={`text-sm font-medium ${
+                              darkMode ? "text-gray-300" : "text-gray-700"
+                            }`}
+                          >
+                            {mark.criteria}
+                            <span className="text-xs opacity-70 ml-2">
+                              (Max: {mark.max})
+                            </span>
                           </span>
                           <input
                             type="number"
                             min="0"
                             max={mark.max}
                             value={mark.score}
-                            onChange={(e) => updateScore(solutions[activeTab].id, mark.criteria, e.target.value)}
-                            className={`w-16 px-2 py-1 rounded ${darkMode ? "bg-gray-700 text-white" : "bg-gray-100 text-gray-800"} border ${darkMode ? "border-gray-600" : "border-gray-300"} text-right`}
+                            onChange={(e) =>
+                              updateScore(
+                                solutions[activeTab].id,
+                                mark.criteria,
+                                e.target.value
+                              )
+                            }
+                            className={`w-16 px-2 py-1 rounded ${
+                              darkMode
+                                ? "bg-gray-700 text-white"
+                                : "bg-gray-100 text-gray-800"
+                            } border ${
+                              darkMode ? "border-gray-600" : "border-gray-300"
+                            } text-right`}
                           />
                         </div>
-                        <motion.div 
-                          className={`w-full h-2 rounded-full ${darkMode ? "bg-gray-700" : "bg-gray-200"} overflow-hidden`}
-                          initial={{ scaleX: 0, transformOrigin: "left center" }}
+                        <motion.div
+                          className={`w-full h-2 rounded-full ${
+                            darkMode ? "bg-gray-700" : "bg-gray-200"
+                          } overflow-hidden`}
+                          initial={{
+                            scaleX: 0,
+                            transformOrigin: "left center",
+                          }}
                           animate={{ scaleX: 1 }}
                           transition={{ delay: 0.2 + i * 0.1 }}
                         >
-                          <motion.div 
+                          <motion.div
                             className="h-full rounded-full"
                             initial={{ width: 0 }}
-                            animate={{ width: `${(mark.score / mark.max) * 100}%` }}
-                            transition={{ 
+                            animate={{
+                              width: `${(mark.score / mark.max) * 100}%`,
+                            }}
+                            transition={{
                               duration: 0.8,
                               delay: 0.3 + i * 0.1,
                               type: "spring",
-                              damping: 10
+                              damping: 10,
                             }}
                             style={{
-                              background: (mark.score / mark.max) > 0.89 
-                                ? (darkMode ? "#4F46E5" : "#6366F1") 
-                                : (mark.score / mark.max) > 0.69 
-                                ? (darkMode ? "#7C3AED" : "#8B5CF6") 
-                                : (darkMode ? "#A78BFA" : "#A78BFA")
+                              background:
+                                mark.score / mark.max > 0.89
+                                  ? darkMode
+                                    ? "#4F46E5"
+                                    : "#6366F1"
+                                  : mark.score / mark.max > 0.69
+                                  ? darkMode
+                                    ? "#7C3AED"
+                                    : "#8B5CF6"
+                                  : darkMode
+                                  ? "#A78BFA"
+                                  : "#A78BFA",
                             }}
                           />
                         </motion.div>
@@ -285,19 +350,50 @@ const SolutionEvaluator = ({ darkMode }) => {
                     ))}
                   </div>
 
-                  <div className={`flex justify-between items-center p-3 rounded-lg ${darkMode ? "bg-gradient-to-r from-indigo-500/10 to-violet-500/10" : "bg-gradient-to-r from-indigo-100 to-violet-100"}`}>
-                    <span className={`font-medium ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Total Score:</span>
-                    <span className={`text-xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
-                      {calculateTotal(solutions[activeTab].marks)} / {calculateMaxTotal(solutions[activeTab].marks)}
+                  <div
+                    className={`flex justify-between items-center p-3 rounded-lg ${
+                      darkMode
+                        ? "bg-gradient-to-r from-indigo-500/10 to-violet-500/10"
+                        : "bg-gradient-to-r from-indigo-100 to-violet-100"
+                    }`}
+                  >
+                    <span
+                      className={`font-medium ${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Total Score:
+                    </span>
+                    <span
+                      className={`text-xl font-bold ${
+                        darkMode ? "text-white" : "text-gray-900"
+                      }`}
+                    >
+                      {calculateTotal(solutions[activeTab].marks)} /{" "}
+                      {calculateMaxTotal(solutions[activeTab].marks)}
                     </span>
                   </div>
 
                   <div>
-                    <h4 className={`text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Feedback</h4>
+                    <h4
+                      className={`text-sm font-medium mb-2 ${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}
+                    >
+                      Feedback
+                    </h4>
                     <textarea
                       value={solutions[activeTab].feedback}
-                      onChange={(e) => updateFeedback(solutions[activeTab].id, e.target.value)}
-                      className={`w-full p-3 rounded-lg ${darkMode ? "bg-gray-700 text-white" : "bg-gray-100 text-gray-800"} border ${darkMode ? "border-gray-600" : "border-gray-300"}`}
+                      onChange={(e) =>
+                        updateFeedback(solutions[activeTab].id, e.target.value)
+                      }
+                      className={`w-full p-3 rounded-lg ${
+                        darkMode
+                          ? "bg-gray-700 text-white"
+                          : "bg-gray-100 text-gray-800"
+                      } border ${
+                        darkMode ? "border-gray-600" : "border-gray-300"
+                      }`}
                       rows="3"
                       placeholder="Enter detailed feedback for this solution..."
                     />
@@ -312,7 +408,9 @@ const SolutionEvaluator = ({ darkMode }) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className={`mt-6 w-full py-3 rounded-lg flex items-center justify-center gap-2 ${
-              darkMode ? "bg-indigo-600 hover:bg-indigo-700" : "bg-indigo-500 hover:bg-indigo-600"
+              darkMode
+                ? "bg-indigo-600 hover:bg-indigo-700"
+                : "bg-indigo-500 hover:bg-indigo-600"
             } text-white font-medium`}
           >
             <FiSave /> Save Evaluations
@@ -321,7 +419,8 @@ const SolutionEvaluator = ({ darkMode }) => {
       ) : (
         <div className="h-64 flex items-center justify-center">
           <p className={`${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-            No solution methods added yet. Add your first solution method to begin evaluation.
+            No solution methods added yet. Add your first solution method to
+            begin evaluation.
           </p>
         </div>
       )}
@@ -334,7 +433,7 @@ const HomePage = () => {
   const [activeFeature, setActiveFeature] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [showSignIn, setShowSignIn] = useState(false);
-  const [showSignUp, setShowSignUp] = useState(false);  // Add this state
+  const [showSignUp, setShowSignUp] = useState(false); // Add this state
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -349,15 +448,16 @@ const HomePage = () => {
     {
       icon: <FiBook className="text-3xl" />,
       title: "Multi-Method Evaluation",
-      description: "Evaluate different solution approaches with customized criteria",
+      description:
+        "Evaluate different solution approaches with customized criteria",
       details: {
         title: "Comprehensive Solution Analysis",
         items: [
           "Support for multiple solution methods per problem",
           "Custom evaluation criteria for each approach",
-          "Detailed feedback for each solution variant"
-        ]
-      }
+          "Detailed feedback for each solution variant",
+        ],
+      },
     },
     {
       icon: <FiEdit2 className="text-3xl" />,
@@ -368,9 +468,9 @@ const HomePage = () => {
         items: [
           "Define criteria like correctness, efficiency, readability",
           "Set maximum scores for each evaluation dimension",
-          "Standardized rubrics across all evaluations"
-        ]
-      }
+          "Standardized rubrics across all evaluations",
+        ],
+      },
     },
     {
       icon: <FiZap className="text-3xl" />,
@@ -381,19 +481,23 @@ const HomePage = () => {
         items: [
           "Compare scores across different approaches",
           "Identify most effective solution methods",
-          "Track improvement over multiple attempts"
-        ]
-      }
-    }
+          "Track improvement over multiple attempts",
+        ],
+      },
+    },
   ];
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? "dark bg-gray-900" : "bg-white"}`}>
+    <div
+      className={`min-h-screen transition-colors duration-300 ${
+        darkMode ? "dark bg-gray-900" : "bg-white"
+      }`}
+    >
       <ParticleBackground darkMode={darkMode} />
-      
+
       {/* Navigation */}
       <nav className="w-full px-4 sm:px-6 lg:px-12 py-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 relative">
-        <motion.div 
+        <motion.div
           className="flex items-center space-x-2"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -404,8 +508,8 @@ const HomePage = () => {
             CodeGrader Pro
           </span>
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           className="flex items-center space-x-6"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -413,8 +517,14 @@ const HomePage = () => {
         >
           <button
             onClick={toggleDarkMode}
-            className={`p-2 rounded-full transition-all ${darkMode ? "bg-gray-700 text-amber-300 hover:bg-gray-600" : "bg-gray-200 text-indigo-700 hover:bg-gray-300"}`}
-            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            className={`p-2 rounded-full transition-all ${
+              darkMode
+                ? "bg-gray-700 text-amber-300 hover:bg-gray-600"
+                : "bg-gray-200 text-indigo-700 hover:bg-gray-300"
+            }`}
+            aria-label={
+              darkMode ? "Switch to light mode" : "Switch to dark mode"
+            }
           >
             {darkMode ? (
               <FiSun className="text-xl" />
@@ -422,8 +532,8 @@ const HomePage = () => {
               <FiMoon className="text-xl" />
             )}
           </button>
-          
-          <motion.button 
+
+          <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowSignIn(true)}
@@ -435,20 +545,26 @@ const HomePage = () => {
       </nav>
 
       {/* Hero Section with Conditional Background */}
-      <section 
-        className={`w-full px-4 sm:px-6 lg:px-12 py-10 sm:py-16 md:py-20 relative ${darkMode ? "bg-gray-900" : "bg-white"}`}
-        style={darkMode ? {
-          backgroundImage: `url(${backgroundImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        } : {}}
+      <section
+        className={`w-full px-4 sm:px-6 lg:px-12 py-10 sm:py-16 md:py-20 relative ${
+          darkMode ? "bg-gray-900" : "bg-white"
+        }`}
+        style={
+          darkMode
+            ? {
+                backgroundImage: `url(${backgroundImage})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }
+            : {}
+        }
       >
         {/* Dark overlay for dark mode to ensure text readability */}
         {darkMode && (
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-0"></div>
         )}
-        
+
         <div className="flex flex-col lg:flex-row items-center gap-12 relative z-10">
           {/* Text content */}
           <motion.div
@@ -457,7 +573,7 @@ const HomePage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <motion.span 
+            <motion.span
               className="inline-block px-3 py-1 text-sm font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200 mb-4"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -465,8 +581,8 @@ const HomePage = () => {
             >
               Advanced Solution Evaluator
             </motion.span>
-            
-            <motion.h1 
+
+            <motion.h1
               className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight dark:text-white text-gray-800"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -477,31 +593,36 @@ const HomePage = () => {
                 Solution Approaches
               </span>
             </motion.h1>
-            
-            <motion.p 
+
+            <motion.p
               className="text-xl dark:text-gray-300 text-gray-600 mb-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              The comprehensive evaluation system that helps educators assess different solution methods for the same problem with structured criteria and detailed feedback.
+              The comprehensive evaluation system that helps educators assess
+              different solution methods for the same problem with structured
+              criteria and detailed feedback.
             </motion.p>
-            
-            <motion.div 
+
+            <motion.div
               className="flex flex-col sm:flex-row gap-4 mb-16"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
               <motion.button
-                whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.3)" }}
+                whileHover={{
+                  scale: 1.03,
+                  boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.3)",
+                }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setShowSignUp(true)}  // Changed to open SignUp
+                onClick={() => setShowSignUp(true)} // Changed to open SignUp
                 className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl hover:shadow-lg transition-all shadow-md hover:shadow-indigo-500/30 flex items-center justify-center gap-2 text-lg font-medium"
               >
                 Get Started <FiArrowRight />
               </motion.button>
-              
+
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
@@ -535,7 +656,11 @@ const HomePage = () => {
       </section>
 
       {/* Features Section */}
-      <section className={`py-20 ${darkMode ? "bg-gray-800/50" : "bg-gray-50"} backdrop-blur-sm relative`}>
+      <section
+        className={`py-20 ${
+          darkMode ? "bg-gray-800/50" : "bg-gray-50"
+        } backdrop-blur-sm relative`}
+      >
         <div className="w-full px-4 sm:px-6 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -544,7 +669,7 @@ const HomePage = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <motion.span 
+            <motion.span
               className="inline-block px-3 py-1 text-sm font-medium rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200 mb-4"
               initial={{ scale: 0.8, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
@@ -553,25 +678,32 @@ const HomePage = () => {
             >
               Key Features
             </motion.span>
-            
-            <motion.h2 
+
+            <motion.h2
               className="text-3xl md:text-4xl font-bold mb-4"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
             >
-              Designed for <span className="text-indigo-600 dark:text-indigo-400">Computer Science</span> Educators
+              Designed for{" "}
+              <span className="text-indigo-600 dark:text-indigo-400">
+                Computer Science
+              </span>{" "}
+              Educators
             </motion.h2>
-            
-            <motion.p 
-              className={`text-lg ${darkMode ? "text-gray-400" : "text-gray-500"} max-w-2xl mx-auto`}
+
+            <motion.p
+              className={`text-lg ${
+                darkMode ? "text-gray-400" : "text-gray-500"
+              } max-w-2xl mx-auto`}
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
             >
-              Specialized tools for evaluating multiple solution approaches to programming problems
+              Specialized tools for evaluating multiple solution approaches to
+              programming problems
             </motion.p>
           </motion.div>
 
@@ -583,20 +715,42 @@ const HomePage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 viewport={{ once: true }}
-                className={`p-8 rounded-xl transition-all ${darkMode ? "bg-gray-700/50 hover:bg-gray-700" : "bg-white hover:bg-gray-100"} hover:shadow-lg cursor-pointer border ${activeFeature === index ? "border-indigo-500 dark:border-indigo-400" : "border-transparent"}`}
+                className={`p-8 rounded-xl transition-all ${
+                  darkMode
+                    ? "bg-gray-700/50 hover:bg-gray-700"
+                    : "bg-white hover:bg-gray-100"
+                } hover:shadow-lg cursor-pointer border ${
+                  activeFeature === index
+                    ? "border-indigo-500 dark:border-indigo-400"
+                    : "border-transparent"
+                }`}
                 whileHover={{ y: -5 }}
                 onClick={() => setActiveFeature(index)}
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
               >
                 <div className="flex flex-col items-center text-center">
-                  <div className={`p-3 rounded-full mb-4 ${darkMode ? "bg-indigo-900/50 text-indigo-300" : "bg-indigo-100 text-indigo-600"}`}>
+                  <div
+                    className={`p-3 rounded-full mb-4 ${
+                      darkMode
+                        ? "bg-indigo-900/50 text-indigo-300"
+                        : "bg-indigo-100 text-indigo-600"
+                    }`}
+                  >
                     {feature.icon}
                   </div>
-                  <h3 className={`text-xl font-semibold mb-3 ${darkMode ? "text-white" : "text-gray-800"}`}>
+                  <h3
+                    className={`text-xl font-semibold mb-3 ${
+                      darkMode ? "text-white" : "text-gray-800"
+                    }`}
+                  >
                     {feature.title}
                   </h3>
-                  <p className={`${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                  <p
+                    className={`${
+                      darkMode ? "text-gray-300" : "text-gray-600"
+                    }`}
+                  >
                     {feature.description}
                   </p>
                 </div>
@@ -612,12 +766,22 @@ const HomePage = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4 }}
-              className={`p-8 rounded-2xl ${darkMode ? "bg-gray-700/50 border-gray-600" : "bg-white border-gray-200"} border shadow-lg backdrop-blur-sm`}
+              className={`p-8 rounded-2xl ${
+                darkMode
+                  ? "bg-gray-700/50 border-gray-600"
+                  : "bg-white border-gray-200"
+              } border shadow-lg backdrop-blur-sm`}
             >
               <div className="flex flex-col lg:flex-row items-center gap-12">
                 {/* Image on the right */}
                 <div className="lg:w-1/2 lg:order-2 h-[400px] flex items-center justify-center">
-                  <div className={`w-full h-full p-6 rounded-xl ${darkMode ? "bg-gray-800/50" : "bg-white"} shadow-lg border ${darkMode ? "border-gray-700" : "border-gray-200"} flex items-center justify-center`}>
+                  <div
+                    className={`w-full h-full p-6 rounded-xl ${
+                      darkMode ? "bg-gray-800/50" : "bg-white"
+                    } shadow-lg border ${
+                      darkMode ? "border-gray-700" : "border-gray-200"
+                    } flex items-center justify-center`}
+                  >
                     {activeFeature === 0 && (
                       <motion.div
                         initial={{ opacity: 0 }}
@@ -625,8 +789,20 @@ const HomePage = () => {
                         className="text-center"
                       >
                         <div className="text-5xl mb-4">📊</div>
-                        <h3 className={`text-xl font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-800"}`}>Multiple Methods</h3>
-                        <p className={darkMode ? "text-gray-300" : "text-gray-600"}>Compare recursive, iterative, and DP solutions</p>
+                        <h3
+                          className={`text-xl font-semibold mb-2 ${
+                            darkMode ? "text-white" : "text-gray-800"
+                          }`}
+                        >
+                          Multiple Methods
+                        </h3>
+                        <p
+                          className={
+                            darkMode ? "text-gray-300" : "text-gray-600"
+                          }
+                        >
+                          Compare recursive, iterative, and DP solutions
+                        </p>
                       </motion.div>
                     )}
                     {activeFeature === 1 && (
@@ -636,8 +812,20 @@ const HomePage = () => {
                         className="text-center"
                       >
                         <div className="text-5xl mb-4">📝</div>
-                        <h3 className={`text-xl font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-800"}`}>Detailed Rubrics</h3>
-                        <p className={darkMode ? "text-gray-300" : "text-gray-600"}>Custom criteria for each solution type</p>
+                        <h3
+                          className={`text-xl font-semibold mb-2 ${
+                            darkMode ? "text-white" : "text-gray-800"
+                          }`}
+                        >
+                          Detailed Rubrics
+                        </h3>
+                        <p
+                          className={
+                            darkMode ? "text-gray-300" : "text-gray-600"
+                          }
+                        >
+                          Custom criteria for each solution type
+                        </p>
                       </motion.div>
                     )}
                     {activeFeature === 2 && (
@@ -647,16 +835,28 @@ const HomePage = () => {
                         className="text-center"
                       >
                         <div className="text-5xl mb-4">🔍</div>
-                        <h3 className={`text-xl font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-800"}`}>Performance Insights</h3>
-                        <p className={darkMode ? "text-gray-300" : "text-gray-600"}>Identify most effective approaches</p>
+                        <h3
+                          className={`text-xl font-semibold mb-2 ${
+                            darkMode ? "text-white" : "text-gray-800"
+                          }`}
+                        >
+                          Performance Insights
+                        </h3>
+                        <p
+                          className={
+                            darkMode ? "text-gray-300" : "text-gray-600"
+                          }
+                        >
+                          Identify most effective approaches
+                        </p>
                       </motion.div>
                     )}
                   </div>
                 </div>
-                
+
                 {/* Text content on the left */}
                 <div className="lg:w-1/2 lg:order-1">
-                  <motion.h3 
+                  <motion.h3
                     className="text-2xl font-bold mb-6 text-indigo-700 dark:text-indigo-300"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -664,20 +864,30 @@ const HomePage = () => {
                   >
                     {features[activeFeature].details.title}
                   </motion.h3>
-                  
+
                   <ul className="space-y-4">
                     {features[activeFeature].details.items.map((item, i) => (
-                      <motion.li 
+                      <motion.li
                         key={i}
                         className="flex items-start"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.3 + i * 0.1 }}
                       >
-                        <span className={`p-1 rounded-full mr-3 mt-1 ${darkMode ? "bg-indigo-900/50 text-indigo-300" : "bg-indigo-100 text-indigo-600"}`}>
+                        <span
+                          className={`p-1 rounded-full mr-3 mt-1 ${
+                            darkMode
+                              ? "bg-indigo-900/50 text-indigo-300"
+                              : "bg-indigo-100 text-indigo-600"
+                          }`}
+                        >
                           <FiCheck className="text-sm" />
                         </span>
-                        <span className={darkMode ? "text-gray-300" : "text-gray-700"}>
+                        <span
+                          className={
+                            darkMode ? "text-gray-300" : "text-gray-700"
+                          }
+                        >
                           {item}
                         </span>
                       </motion.li>
@@ -691,7 +901,11 @@ const HomePage = () => {
       </section>
 
       {/* Testimonial Section */}
-      <section className={`py-20 ${darkMode ? "bg-gray-900/50" : "bg-indigo-100/50"} backdrop-blur-sm relative`}>
+      <section
+        className={`py-20 ${
+          darkMode ? "bg-gray-900/50" : "bg-indigo-100/50"
+        } backdrop-blur-sm relative`}
+      >
         <div className="container mx-auto px-6">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
@@ -702,18 +916,23 @@ const HomePage = () => {
             >
               <FaChalkboardTeacher className="text-4xl text-indigo-600 dark:text-indigo-400 mx-auto mb-6" />
             </motion.div>
-            
-            <motion.blockquote 
-              className={`text-2xl md:text-3xl font-medium mb-8 ${darkMode ? "text-gray-200" : "text-gray-800"} leading-relaxed`}
+
+            <motion.blockquote
+              className={`text-2xl md:text-3xl font-medium mb-8 ${
+                darkMode ? "text-gray-200" : "text-gray-800"
+              } leading-relaxed`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              "This system has revolutionized how we evaluate different solution approaches in our algorithms course. We can now objectively compare recursive vs. iterative solutions with consistent criteria."
+              "This system has revolutionized how we evaluate different solution
+              approaches in our algorithms course. We can now objectively
+              compare recursive vs. iterative solutions with consistent
+              criteria."
             </motion.blockquote>
-            
-            <motion.div 
+
+            <motion.div
               className="flex items-center justify-center gap-4"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -724,8 +943,18 @@ const HomePage = () => {
                 TJ
               </div>
               <div className="text-left">
-                <p className={`font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>Tarun T</p>
-                <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                <p
+                  className={`font-semibold ${
+                    darkMode ? "text-white" : "text-gray-800"
+                  }`}
+                >
+                  Tarun T
+                </p>
+                <p
+                  className={`text-sm ${
+                    darkMode ? "text-gray-400" : "text-gray-600"
+                  }`}
+                >
                   Computer Science Department
                 </p>
               </div>
@@ -735,7 +964,11 @@ const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className={`py-20 ${darkMode ? "bg-gray-800/50" : "bg-white"} backdrop-blur-sm relative`}>
+      <section
+        className={`py-20 ${
+          darkMode ? "bg-gray-800/50" : "bg-white"
+        } backdrop-blur-sm relative`}
+      >
         <div className="container mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0 }}
@@ -744,7 +977,7 @@ const HomePage = () => {
             transition={{ duration: 0.6 }}
             className="max-w-2xl mx-auto"
           >
-            <motion.h2 
+            <motion.h2
               className="text-3xl md:text-4xl font-bold mb-6"
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -753,18 +986,21 @@ const HomePage = () => {
             >
               Ready to Transform Your Evaluations?
             </motion.h2>
-            
-            <motion.p 
-              className={`text-xl ${darkMode ? "text-gray-300" : "text-gray-600"} mb-10`}
+
+            <motion.p
+              className={`text-xl ${
+                darkMode ? "text-gray-300" : "text-gray-600"
+              } mb-10`}
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
             >
-              Join educators using CodeGrader Pro to objectively assess multiple solution approaches.
+              Join educators using CodeGrader Pro to objectively assess multiple
+              solution approaches.
             </motion.p>
-            
-            <motion.div 
+
+            <motion.div
               className="flex flex-col sm:flex-row justify-center gap-4"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -772,18 +1008,23 @@ const HomePage = () => {
               transition={{ delay: 0.4 }}
             >
               <motion.button
-                whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.3)" }}
+                whileHover={{
+                  scale: 1.03,
+                  boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.3)",
+                }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setShowSignUp(true)}  // Changed to open SignUp
+                onClick={() => setShowSignUp(true)} // Changed to open SignUp
                 className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl hover:shadow-lg transition-all shadow-md hover:shadow-indigo-500/30 text-lg font-medium"
               >
                 Start Free Trial
               </motion.button>
-              
+
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
-                className={`px-8 py-4 border-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400 rounded-xl ${darkMode ? "hover:bg-gray-800" : "hover:bg-indigo-50"} transition text-lg font-medium`}
+                className={`px-8 py-4 border-2 border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400 rounded-xl ${
+                  darkMode ? "hover:bg-gray-800" : "hover:bg-indigo-50"
+                } transition text-lg font-medium`}
               >
                 Schedule Demo
               </motion.button>
@@ -793,10 +1034,16 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-      <footer className={`py-12 ${darkMode ? "bg-gray-900/80" : "bg-gray-50"} backdrop-blur-sm border-t ${darkMode ? "border-gray-800" : "border-gray-200"} relative`}>
+      <footer
+        className={`py-12 ${
+          darkMode ? "bg-gray-900/80" : "bg-gray-50"
+        } backdrop-blur-sm border-t ${
+          darkMode ? "border-gray-800" : "border-gray-200"
+        } relative`}
+      >
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <motion.div 
+            <motion.div
               className="flex items-center space-x-2 mb-6 md:mb-0"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -807,8 +1054,8 @@ const HomePage = () => {
                 CodeGrader Pro
               </span>
             </motion.div>
-            
-            <motion.div 
+
+            <motion.div
               className="flex space-x-6"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -819,7 +1066,11 @@ const HomePage = () => {
                 <motion.a
                   key={i}
                   href="#"
-                  className={`${darkMode ? "text-gray-400 hover:text-indigo-400" : "text-gray-600 hover:text-indigo-600"} transition`}
+                  className={`${
+                    darkMode
+                      ? "text-gray-400 hover:text-indigo-400"
+                      : "text-gray-600 hover:text-indigo-600"
+                  } transition`}
                   initial={{ opacity: 0, y: 10 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -830,14 +1081,19 @@ const HomePage = () => {
               ))}
             </motion.div>
           </div>
-          
-          <motion.div 
-            className={`border-t ${darkMode ? "border-gray-800" : "border-gray-200"} mt-8 pt-8 text-center ${darkMode ? "text-gray-400" : "text-gray-500"}`}
+
+          <motion.div
+            className={`border-t ${
+              darkMode ? "border-gray-800" : "border-gray-200"
+            } mt-8 pt-8 text-center ${
+              darkMode ? "text-gray-400" : "text-gray-500"
+            }`}
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            © {new Date().getFullYear()} CodeGrader Pro. Developed by T. Tarun & M. Kowsik. All rights reserved.
+            © {new Date().getFullYear()} CodeGrader Pro. Developed by T. Tarun &
+            M. Kowsik. All rights reserved.
           </motion.div>
         </div>
       </footer>
@@ -845,8 +1101,8 @@ const HomePage = () => {
       {/* Sign In Modal */}
       <AnimatePresence>
         {showSignIn && (
-          <SignIn 
-            onClose={() => setShowSignIn(false)} 
+          <SignIn
+            onClose={() => setShowSignIn(false)}
             onSignUpClick={() => {
               setShowSignIn(false);
               setShowSignUp(true);
@@ -858,8 +1114,8 @@ const HomePage = () => {
       {/* Sign Up Modal */}
       <AnimatePresence>
         {showSignUp && (
-          <SignUp 
-            onClose={() => setShowSignUp(false)} 
+          <SignUp
+            onClose={() => setShowSignUp(false)}
             onSignInClick={() => {
               setShowSignUp(false);
               setShowSignIn(true);
