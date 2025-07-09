@@ -250,17 +250,17 @@ const SignUp = ({ onClose, onSignInClick }) => {
               </div>
 
               <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-    Already have an account?{" "}
-    <button
-      onClick={() => {
-        onClose();  // Close the signup modal
-        onSignInClick();  // Open the signin modal
-      }}
-      className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-    >
-      Sign in
-    </button>
-  </div>
+                Already have an account?{" "}
+                <button
+                  onClick={() => {
+                    onClose(); // Close the signup modal
+                    onSignInClick(); // Open the signin modal
+                  }}
+                  className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  Sign in
+                </button>
+              </div>
             </motion.div>
             <ToastContainer />
           </div>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import AllQuestions from "./AllQuestions";
 
 const AddQuestion = () => {
   const [title, setTitle] = useState("");
@@ -12,6 +11,7 @@ const AddQuestion = () => {
   const [subjects, setSubjects] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [questionTypes, setQuestionTypes] = useState([]);
+  const [subjectTypes, setSubjectTypes] = useState([]);
 
   // Modal state
   const [showSubjectModal, setShowSubjectModal] = useState(false);
@@ -23,7 +23,7 @@ const AddQuestion = () => {
     try {
       const res = await fetch("http://localhost:2025/api/subjects");
       const data = await res.json();
-      setSubjects(data);
+      setSubjects(Array.isArray(data) ? data : []);
     } catch {
       toast.error("Failed to load subjects");
     }
@@ -46,13 +46,18 @@ const AddQuestion = () => {
 
     fetch("http://localhost:2025/api/departments")
       .then((res) => res.json())
-      .then(setDepartments)
+      .then((data) => setDepartments(Array.isArray(data) ? data : []))
       .catch(() => toast.error("Failed to load departments"));
 
     fetch("http://localhost:2025/api/questions/question-types")
       .then((res) => res.json())
-      .then(setQuestionTypes)
+      .then((data) => setQuestionTypes(Array.isArray(data) ? data : []))
       .catch(() => toast.error("Failed to load question types"));
+
+    fetch("http://localhost:2025/api/subjects/subject-types")
+      .then((res) => res.json())
+      .then((data) => setSubjectTypes(Array.isArray(data) ? data : []))
+      .catch(() => toast.error("Failed to load subject types"));
   }, []);
 
   const handleAddOption = () => {
@@ -72,8 +77,8 @@ const AddQuestion = () => {
   };
 
   const submitNewSubject = async () => {
-    if (!newSubjectName || !departmentId) {
-      toast.error("Subject name and department are required.");
+    if (!newSubjectName || !newSubjectType || !departmentId) {
+      toast.error("Subject name, type, and department are required.");
       return;
     }
 
@@ -93,6 +98,7 @@ const AddQuestion = () => {
       toast.success("Subject added successfully!");
       setShowSubjectModal(false);
       setNewSubjectName("");
+      setNewSubjectType("");
       fetchSubjects();
     } catch (err) {
       toast.error("Error creating subject");
@@ -122,8 +128,20 @@ const AddQuestion = () => {
 
       if (!response.ok) throw new Error("Failed to submit question");
       const data = await response.json();
-      console.log("Success:", data);
       toast.success("Question added!");
+
+      // Fetch updated questions after submit
+      fetch("http://localhost:2025/api/questions")
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setQuestions(data);
+          } else {
+            setQuestions([]);
+            toast.error("Invalid data format for questions");
+          }
+        })
+        .catch(() => toast.error("Failed to load questions"));
     } catch (error) {
       console.error("Error:", error);
       toast.error("Failed to submit");
@@ -275,11 +293,12 @@ const AddQuestion = () => {
               className="w-full p-2 mb-3 border rounded"
               value={newSubjectType}
               onChange={(e) => setNewSubjectType(e.target.value)}
+              required
             >
               <option value="">Select Subject Type</option>
-              {questionTypes.map((qt) => (
-                <option key={qt} value={qt}>
-                  {qt.charAt(0) + qt.slice(1).toLowerCase()}
+              {subjectTypes.map((stype) => (
+                <option key={stype} value={stype}>
+                  {stype.charAt(0) + stype.slice(1).toLowerCase()}
                 </option>
               ))}
             </select>
@@ -288,6 +307,7 @@ const AddQuestion = () => {
               className="w-full p-2 mb-4 border rounded"
               value={departmentId}
               onChange={(e) => setDepartmentId(e.target.value)}
+              required
             >
               <option value="">Select Department</option>
               {departments.map((d) => (
