@@ -724,14 +724,14 @@ const HomePage = () => {
                 TJ
               </div>
               <div className="text-left">
-                <p className={`font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>Tarun T</p>
+                <p className={`font-semibold ${darkMode ? "text-white" : "text-gray-800"}`}>Tarun T & Kowsik M</p>
                 <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
                   Computer Science Department
                 </p>
               </div>
             </motion.div>
           </div>
-        </div>
+        </div>  
       </section>
 
       {/* CTA Section */}
@@ -857,16 +857,16 @@ const HomePage = () => {
 
       {/* Sign Up Modal */}
       <AnimatePresence>
-        {showSignUp && (
-          <SignUp 
-            onClose={() => setShowSignUp(false)} 
-            onSignInClick={() => {
-              setShowSignUp(false);
-              setShowSignIn(true);
-            }}
-          />
-        )}
-      </AnimatePresence>
+  {showSignUp && (
+    <SignUp 
+      onClose={() => setShowSignUp(false)} 
+      onSignInClick={() => {
+        setShowSignUp(false);
+        setShowSignIn(true);
+      }}
+    />
+  )}
+</AnimatePresence>
     </div>
   );
 };

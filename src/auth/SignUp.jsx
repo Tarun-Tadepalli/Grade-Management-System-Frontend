@@ -6,7 +6,7 @@ import { FaGoogle, FaGithub, FaFacebook } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-const SignUp = ({ onClose }) => {
+const SignUp = ({ onClose, onSignInClick }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -250,14 +250,17 @@ const SignUp = ({ onClose }) => {
               </div>
 
               <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-                Already have an account?{" "}
-                <a
-                  href="/signin"
-                  className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-                >
-                  Sign in
-                </a>
-              </div>
+    Already have an account?{" "}
+    <button
+      onClick={() => {
+        onClose();  // Close the signup modal
+        onSignInClick();  // Open the signin modal
+      }}
+      className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+    >
+      Sign in
+    </button>
+  </div>
             </motion.div>
             <ToastContainer />
           </div>

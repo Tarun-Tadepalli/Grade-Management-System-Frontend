@@ -136,7 +136,7 @@ const SignIn = ({ onClose, onSignUpClick }) => {
                     <label
                       htmlFor="remember"
                       className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-                    >
+                    > 
                       Remember me
                     </label>
                   </div>
