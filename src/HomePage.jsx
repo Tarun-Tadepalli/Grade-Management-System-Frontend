@@ -49,7 +49,7 @@ const ParticleBackground = ({ darkMode }) => {
   }));
 
   return (
-    <div className="fixed inset-0 overflow-hidden -z-10">
+    <div className="absolute inset-0 overflow-hidden z-0">
       {particles.map((particle) => (
         <motion.div
           key={particle.id}
