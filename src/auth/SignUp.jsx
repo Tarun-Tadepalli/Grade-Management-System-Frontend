@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReCAPTCHA from "react-google-recaptcha";
 import { FiX, FiArrowRight } from "react-icons/fi";
-import { FaGoogle, FaGithub, FaFacebook } from "react-icons/fa";
+import { FaGoogle, FaGithub } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -225,7 +225,7 @@ const SignUp = ({ onClose, onSignInClick }) => {
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-3 gap-3">
+                <div className="mt-6 grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition"
@@ -240,12 +240,7 @@ const SignUp = ({ onClose, onSignInClick }) => {
                     <FaGithub className="text-gray-800 dark:text-gray-200 text-lg" />
                   </button>
 
-                  <button
-                    type="button"
-                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition"
-                  >
-                    <FaFacebook className="text-blue-600 text-lg" />
-                  </button>
+                  
                 </div>
               </div>
 

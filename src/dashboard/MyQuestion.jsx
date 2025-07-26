@@ -2,42 +2,66 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import Layout from "../dashboard/layout";
+import { useNavigate } from "react-router-dom";
+import Layout from "./layout";
 
-const AllQuestions = () => {
+const MyQuestions = () => {
   const [questions, setQuestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const navigate = useNavigate();
 
   const { scrollYProgress } = useScroll();
   const backgroundOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0.3]);
 
   useEffect(() => {
+    fetchMyQuestions();
+  }, []);
+
+  const fetchMyQuestions = () => {
     setIsLoading(true);
-    const timer = setTimeout(() => {
-      fetch("http://localhost:2025/api/questions/my-questions", {
+    fetch("http://localhost:2025/api/questions/my-questions", {
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch questions");
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setQuestions(data);
+        } else {
+          throw new Error("Invalid data format");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error("Could not load questions");
+      })
+      .finally(() => setIsLoading(false));
+  };
+
+  const handleDeleteQuestion = (questionId) => {
+    if (window.confirm("Are you sure you want to delete this question?")) {
+      fetch(`http://localhost:2025/api/questions/${questionId}`, {
+        method: "DELETE",
         credentials: "include",
       })
         .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch questions");
-          return res.json();
-        })
-        .then((data) => {
-          if (Array.isArray(data)) {
-            setQuestions(data);
-          } else {
-            throw new Error("Invalid data format");
-          }
+          if (!res.ok) throw new Error("Failed to delete question");
+          toast.success("Question deleted successfully");
+          fetchMyQuestions(); // Refresh the list
         })
         .catch((err) => {
           console.error(err);
-          toast.error("Could not load questions");
-        })
-        .finally(() => setIsLoading(false));
-    }, 1500);
+          toast.error("Failed to delete question");
+        });
+    }
+  };
 
-    return () => clearTimeout(timer);
-  }, []);
+  const handleUpdateQuestion = (question) => {
+    navigate("/addq", { state: { questionToUpdate: question } });
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -179,7 +203,7 @@ const AllQuestions = () => {
               }}
               className="text-3xl font-bold bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent bg-[length:300%_100%]"
             >
-              All Questions
+              My Questions
             </motion.h1>
           </motion.div>
 
@@ -278,7 +302,7 @@ const AllQuestions = () => {
                 }}
                 className="mt-2 text-gray-500 dark:text-gray-400"
               >
-                The question bank is currently empty
+                You haven't created any questions yet
               </motion.p>
               <motion.button
                 whileHover={{ 
@@ -286,9 +310,10 @@ const AllQuestions = () => {
                   boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
                 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/addq")}
                 className="mt-6 px-6 py-2 rounded-full font-medium bg-indigo-500 hover:bg-indigo-600 text-white shadow-md"
               >
-                Add First Question
+                Create Your First Question
               </motion.button>
             </motion.div>
           )}
@@ -418,6 +443,31 @@ const AllQuestions = () => {
                           ))}
                         </motion.ul>
                       )}
+
+                      {/* Action Buttons */}
+                      <motion.div 
+                        className="flex justify-end gap-3 mt-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                      >
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleUpdateQuestion(q)}
+                          className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium"
+                        >
+                          Update
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleDeleteQuestion(q.id)}
+                          className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-medium"
+                        >
+                          Delete
+                        </motion.button>
+                      </motion.div>
                     </div>
                   </motion.div>
                 ))}
@@ -441,6 +491,7 @@ const AllQuestions = () => {
             boxShadow: "0 10px 25px -5px rgba(99, 102, 241, 0.4)"
           }}
           whileTap={{ scale: 0.9 }}
+          onClick={() => navigate("/addq")}
           className="p-4 rounded-full shadow-xl bg-indigo-500 hover:bg-indigo-600 text-white"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -483,4 +534,4 @@ const AllQuestions = () => {
   );
 };
 
-export default AllQuestions;
+export default MyQuestions;

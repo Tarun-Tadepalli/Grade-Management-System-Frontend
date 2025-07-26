@@ -23,6 +23,7 @@ const SignIn = ({ onClose, onSignUpClick }) => {
       return;
     }
 
+    
     try {
       const res = await fetch("http://localhost:2025/api/auth/signin", {
         method: "POST",
@@ -176,18 +177,23 @@ const SignIn = ({ onClose, onSignUpClick }) => {
                   </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-3 gap-3">
-                  <GoogleOAuthButton />
-
-                  <GitHubOAuthButton />
-
-                  <button
-                    type="button"
-                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition"
-                  >
-                    <FaFacebook className="text-blue-600 text-lg" />
-                  </button>
-                </div>
+                <div className="mt-6 grid grid-cols-2 gap-4">
+                                  <button
+                                    type="button"
+                                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition"
+                                  >
+                                    <FaGoogle className="text-red-500 text-lg" />
+                                  </button>
+                
+                                  <button
+                                    type="button"
+                                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition"
+                                  >
+                                    <FaGithub className="text-gray-800 dark:text-gray-200 text-lg" />
+                                  </button>
+                
+                                  
+                                </div>
               </div>
 
               <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">

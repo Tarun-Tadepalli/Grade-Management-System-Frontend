@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "../dashboard/layout";
 
 const AddQuestion = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [title, setTitle] = useState("");
   const [type, setType] = useState("");
   const [subjectId, setSubjectId] = useState("");
   const [departmentId, setDepartmentId] = useState("");
   const [options, setOptions] = useState([{ text: "", marks: 0 }]);
-  
+
   const [subjects, setSubjects] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [questionTypes, setQuestionTypes] = useState([]);
   const [subjectTypes, setSubjectTypes] = useState([]);
-  
+
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [newSubjectName, setNewSubjectName] = useState("");
   const [newSubjectType, setNewSubjectType] = useState("");
@@ -23,6 +27,31 @@ const AddQuestion = () => {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const [showAiSuggestions, setShowAiSuggestions] = useState(false);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [questionId, setQuestionId] = useState(null);
+
+  // Initialize form if editing
+  useEffect(() => {
+    if (location.state?.questionToUpdate) {
+      const question = location.state.questionToUpdate;
+      setTitle(question.title);
+      setType(question.type);
+      setSubjectId(
+        question.subjectId !== null && question.subjectId !== undefined
+          ? question.subjectId.toString()
+          : ""
+      );
+      setDepartmentId(
+        question.departmentId !== null && question.departmentId !== undefined
+          ? question.departmentId.toString()
+          : ""
+      );
+      setOptions(question.options || [{ text: "", marks: 0 }]);
+      setQuestionId(question.id);
+      setIsEditing(true);
+    }
+  }, [location.state]);
 
   const fetchSubjects = async () => {
     try {
@@ -106,8 +135,14 @@ const AddQuestion = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:2025/api/questions/add", {
-        method: "POST",
+      const url = isEditing
+        ? `http://localhost:2025/api/questions/${questionId}`
+        : "http://localhost:2025/api/questions/add";
+
+      const method = isEditing ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
@@ -116,17 +151,25 @@ const AddQuestion = () => {
       });
 
       if (!response.ok) throw new Error("Failed to submit question");
-      
+
       const data = await response.json();
-      toast.success("Question added successfully!");
-      setTitle("");
-      setType("");
-      setSubjectId("");
-      setDepartmentId("");
-      setOptions([{ text: "", marks: 0 }]);
-      setAiSuggestions([]);
+      toast.success(
+        `Question ${isEditing ? "updated" : "added"} successfully!`
+      );
+
+      if (isEditing) {
+        navigate("/my-questions");
+      } else {
+        // Reset form for new questions
+        setTitle("");
+        setType("");
+        setSubjectId("");
+        setDepartmentId("");
+        setOptions([{ text: "", marks: 0 }]);
+        setAiSuggestions([]);
+      }
     } catch (error) {
-      toast.error("Failed to submit question");
+      toast.error(`Failed to ${isEditing ? "update" : "submit"} question`);
     } finally {
       setIsSubmitting(false);
     }
@@ -142,17 +185,22 @@ const AddQuestion = () => {
     setShowAiSuggestions(true);
 
     try {
-      const response = await fetch("http://localhost:2025/api/gemini/suggest-evaluations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          question: title,
-          subject: subjects.find(s => s.id === parseInt(subjectId))?.name || "general",
-          questionType: type
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:2025/api/gemini/suggest-evaluations",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: title,
+            subject:
+              subjects.find((s) => s.id === parseInt(subjectId))?.name ||
+              "general",
+            questionType: type,
+          }),
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to get AI suggestions");
 
@@ -179,7 +227,7 @@ const AddQuestion = () => {
         "Solved with dummy node approach",
         "Solved with tail pointer optimization",
         "Solved with hash map for cycle detection",
-        "Solved with fast/slow pointer technique"
+        "Solved with fast/slow pointer technique",
       ];
     } else if (question.toLowerCase().includes("array")) {
       return [
@@ -192,7 +240,7 @@ const AddQuestion = () => {
         "Solved with dynamic programming",
         "Solved with divide and conquer",
         "Solved with prefix sum technique",
-        "Solved with bit manipulation"
+        "Solved with bit manipulation",
       ];
     } else if (question.toLowerCase().includes("tree")) {
       return [
@@ -205,7 +253,7 @@ const AddQuestion = () => {
         "Solved with post-order traversal",
         "Solved with in-order traversal",
         "Solved with pre-order traversal",
-        "Solved with serialization approach"
+        "Solved with serialization approach",
       ];
     } else {
       return [
@@ -218,17 +266,19 @@ const AddQuestion = () => {
         "Case study approach",
         "Comparative analysis",
         "Historical context analysis",
-        "Practical implementation"
+        "Practical implementation",
       ];
     }
   };
 
   const addSuggestionAsOption = (suggestion) => {
-    if (options.some(opt => opt.text.toLowerCase() === suggestion.toLowerCase())) {
+    if (
+      options.some((opt) => opt.text.toLowerCase() === suggestion.toLowerCase())
+    ) {
       toast.error("This evaluation technique already exists");
       return;
     }
-    
+
     setOptions([...options, { text: suggestion, marks: 5 }]);
     toast.success("Evaluation technique added!");
   };
@@ -239,9 +289,9 @@ const AddQuestion = () => {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
 
   const itemVariants = {
@@ -251,9 +301,9 @@ const AddQuestion = () => {
       opacity: 1,
       transition: {
         duration: 0.5,
-        ease: "easeOut"
-      }
-    }
+        ease: "easeOut",
+      },
+    },
   };
 
   return (
@@ -264,40 +314,48 @@ const AddQuestion = () => {
         transition={{ duration: 0.5 }}
         className="h-full"
       >
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
           className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full"
         >
           {/* Form Section */}
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             whileHover={{ y: -5 }}
             className="p-8 rounded-3xl shadow-2xl transition-all duration-500 h-full overflow-y-auto bg-white dark:bg-gray-800"
           >
             <div className="flex items-center mb-6">
-              <motion.div 
+              <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
                 className="mr-4"
               >
                 <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8 text-indigo-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
                   </svg>
                 </div>
               </motion.div>
               <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
-                Add New Question
+                {isEditing ? "Update Question" : "Add New Question"}
               </h2>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
-              <motion.div 
-                whileHover={{ scale: 1.01 }}
-                className="relative"
-              >
+              <motion.div whileHover={{ scale: 1.01 }} className="relative">
                 <label className="absolute -top-2 left-4 px-2 text-xs font-medium bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300">
                   Question Title
                 </label>
@@ -312,9 +370,7 @@ const AddQuestion = () => {
               </motion.div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <motion.div 
-                  whileHover={{ scale: 1.01 }}
-                >
+                <motion.div whileHover={{ scale: 1.01 }}>
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                     Question Type
                   </label>
@@ -333,9 +389,7 @@ const AddQuestion = () => {
                   </select>
                 </motion.div>
 
-                <motion.div 
-                  whileHover={{ scale: 1.01 }}
-                >
+                <motion.div whileHover={{ scale: 1.01 }}>
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                     Department
                   </label>
@@ -347,7 +401,7 @@ const AddQuestion = () => {
                   >
                     <option value="">Select Department</option>
                     {departments.map((d) => (
-                      <option key={d.id} value={d.id}>
+                      <option key={d.id} value={d.id.toString()}>
                         {d.name}
                       </option>
                     ))}
@@ -355,9 +409,7 @@ const AddQuestion = () => {
                 </motion.div>
               </div>
 
-              <motion.div 
-                whileHover={{ scale: 1.01 }}
-              >
+              <motion.div whileHover={{ scale: 1.01 }}>
                 <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                   Subject
                 </label>
@@ -370,7 +422,7 @@ const AddQuestion = () => {
                   >
                     <option value="">Select Subject</option>
                     {subjects.map((s) => (
-                      <option key={s.id} value={s.id}>
+                      <option key={s.id} value={s.id.toString()}>
                         {s.name}
                       </option>
                     ))}
@@ -382,8 +434,17 @@ const AddQuestion = () => {
                     onClick={() => setShowSubjectModal(true)}
                     className="px-4 rounded-xl transition-all duration-300 flex items-center bg-indigo-500 hover:bg-indigo-600 text-white shadow-md"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-1"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     New
                   </motion.button>
@@ -402,18 +463,27 @@ const AddQuestion = () => {
                     onClick={getEvaluationTechniques}
                     disabled={!title.trim()}
                     className={`text-xs px-3 py-1 rounded-lg transition-all duration-300 flex items-center ${
-                      !title.trim() 
-                        ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' 
-                        : 'bg-indigo-500 dark:bg-indigo-600 hover:bg-indigo-600 dark:hover:bg-indigo-700'
+                      !title.trim()
+                        ? "bg-gray-300 dark:bg-gray-600 cursor-not-allowed"
+                        : "bg-indigo-500 dark:bg-indigo-600 hover:bg-indigo-600 dark:hover:bg-indigo-700"
                     } text-white shadow-md`}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3 mr-1"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     AI Suggestions
                   </motion.button>
                 </div>
-                
+
                 <AnimatePresence>
                   {options.map((opt, index) => (
                     <motion.div
@@ -467,8 +537,17 @@ const AddQuestion = () => {
                           className="mt-6 p-1 rounded-full transition-all duration-300 text-red-500 dark:text-red-400 hover:bg-gray-200 dark:hover:bg-gray-600"
                           onClick={() => handleRemoveOption(index)}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </motion.button>
                       )}
@@ -482,8 +561,17 @@ const AddQuestion = () => {
                   onClick={handleAddOption}
                   className="mt-3 inline-flex items-center transition-all duration-300 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   Add Technique
                 </motion.button>
@@ -496,25 +584,50 @@ const AddQuestion = () => {
                   type="submit"
                   disabled={isSubmitting}
                   className={`w-full py-3 px-6 rounded-xl font-medium text-lg shadow-lg transition-all duration-300 ${
-                    isSubmitting 
-                      ? 'bg-indigo-400 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600'
+                    isSubmitting
+                      ? "bg-indigo-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
                   } text-white`}
                 >
                   {isSubmitting ? (
                     <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Processing...
                     </span>
                   ) : (
                     <span className="flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-2"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
                       </svg>
-                      Submit Question
+                      {isEditing ? "Update Question" : "Submit Question"}
                     </span>
                   )}
                 </motion.button>
@@ -523,20 +636,31 @@ const AddQuestion = () => {
           </motion.div>
 
           {/* Gemini AI Suggestions Panel */}
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             whileHover={{ y: -5 }}
             className="p-8 rounded-3xl shadow-2xl transition-all duration-500 h-[80vh] overflow-hidden flex flex-col bg-white dark:bg-gray-800"
           >
             <div className="flex items-center mb-6">
-              <motion.div 
+              <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ repeat: Infinity, duration: 3 }}
                 className="mr-4"
               >
                 <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8 text-purple-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
                   </svg>
                 </div>
               </motion.div>
@@ -544,7 +668,7 @@ const AddQuestion = () => {
                 AI Evaluation Suggestions
               </h2>
             </div>
-            
+
             <div className="space-y-4 overflow-y-auto flex-1 pr-2">
               {showAiSuggestions ? (
                 <>
@@ -556,11 +680,26 @@ const AddQuestion = () => {
                     >
                       <motion.div
                         animate={{ rotate: 360 }}
-                        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                        transition={{
+                          repeat: Infinity,
+                          duration: 1,
+                          ease: "linear",
+                        }}
                         className="mb-4 p-3 rounded-full bg-gray-200 dark:bg-gray-700"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-8 w-8 text-indigo-500"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
                         </svg>
                       </motion.div>
                       <motion.p
@@ -585,10 +724,11 @@ const AddQuestion = () => {
                           Suggested Evaluation Techniques:
                         </h3>
                         <p className="text-sm mt-1 text-gray-600 dark:text-gray-300">
-                          Based on: "{title.substring(0, 50)}{title.length > 50 ? '...' : ''}"
+                          Based on: "{title.substring(0, 50)}
+                          {title.length > 50 ? "..." : ""}"
                         </p>
                       </motion.div>
-                      
+
                       <AnimatePresence>
                         {aiSuggestions.map((suggestion, index) => (
                           <motion.div
@@ -609,8 +749,17 @@ const AddQuestion = () => {
                               onClick={() => addSuggestionAsOption(suggestion)}
                               className="p-2 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                  clipRule="evenodd"
+                                />
                               </svg>
                             </motion.button>
                           </motion.div>
@@ -637,7 +786,7 @@ const AddQuestion = () => {
                           d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      <motion.p 
+                      <motion.p
                         animate={{ opacity: [0.5, 1, 0.5] }}
                         transition={{ repeat: Infinity, duration: 2 }}
                         className="mt-3 text-lg text-gray-500 dark:text-gray-300"
@@ -657,15 +806,27 @@ const AddQuestion = () => {
                   className="text-center py-10 rounded-xl bg-gray-50 dark:bg-gray-700 h-full flex flex-col items-center justify-center"
                 >
                   <div className="p-4 rounded-full bg-gray-200 dark:bg-gray-600 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-12 w-12 text-indigo-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
                     </svg>
                   </div>
                   <h3 className="text-xl font-medium mb-2 text-gray-800 dark:text-white">
                     Gemini AI Assistant
                   </h3>
                   <p className="mb-6 text-gray-600 dark:text-gray-300">
-                    Get AI-powered evaluation technique suggestions for your questions
+                    Get AI-powered evaluation technique suggestions for your
+                    questions
                   </p>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -673,9 +834,9 @@ const AddQuestion = () => {
                     onClick={getEvaluationTechniques}
                     disabled={!title.trim()}
                     className={`px-6 py-2 rounded-xl font-medium shadow-lg transition-all duration-300 ${
-                      !title.trim() 
-                        ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600'
+                      !title.trim()
+                        ? "bg-gray-300 dark:bg-gray-600 cursor-not-allowed"
+                        : "bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
                     } text-white`}
                   >
                     Generate Suggestions
@@ -716,16 +877,25 @@ const AddQuestion = () => {
                     onClick={() => setShowSubjectModal(false)}
                     className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </motion.button>
                 </div>
 
                 <div className="space-y-4">
-                  <motion.div 
-                    whileHover={{ scale: 1.01 }}
-                  >
+                  <motion.div whileHover={{ scale: 1.01 }}>
                     <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                       Subject Name
                     </label>
@@ -738,9 +908,7 @@ const AddQuestion = () => {
                     />
                   </motion.div>
 
-                  <motion.div 
-                    whileHover={{ scale: 1.01 }}
-                  >
+                  <motion.div whileHover={{ scale: 1.01 }}>
                     <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                       Subject Type
                     </label>
@@ -759,9 +927,7 @@ const AddQuestion = () => {
                     </select>
                   </motion.div>
 
-                  <motion.div 
-                    whileHover={{ scale: 1.01 }}
-                  >
+                  <motion.div whileHover={{ scale: 1.01 }}>
                     <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                       Department
                     </label>
@@ -773,7 +939,7 @@ const AddQuestion = () => {
                     >
                       <option value="">Select Department</option>
                       {departments.map((d) => (
-                        <option key={d.id} value={d.id}>
+                        <option key={d.id} value={d.id.toString()}>
                           {d.name}
                         </option>
                       ))}
